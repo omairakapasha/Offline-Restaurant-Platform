@@ -1,0 +1,27 @@
+{
+  "name": "@workspace/db",
+  "version": "1.0.0",
+  "description": "Drizzle ORM schema and migrations for Restaurant Management System",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "push": "drizzle-kit push:pg",
+    "generate": "drizzle-kit generate:pg",
+    "migrate": "drizzle-kit migrate:pg",
+    "studio": "drizzle-kit studio",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.30.0",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.20.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

@@ -1,0 +1,61 @@
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+// Load the single root .env regardless of the process working directory (the app
+// runs from artifacts/api-server). In Docker the file is absent and env is
+// injected by docker-compose, which dotenv leaves untouched.
+dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../../.env') });
+
+// Validate required environment variables
+const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET'];
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    throw new Error(`Missing required environment variable: ${envVar}`);
+  }
+}
+
+export default {
+  // Branding — configurable so any restaurant can rebrand without code changes.
+  // Consumed by pages/theme.ts (BRAND) and surfaced on the customer header,
+  // receipt, and page titles.
+  BRAND_NAME: process.env.BRAND_NAME || 'The Corner Table',
+  BRAND_TAGLINE: process.env.BRAND_TAGLINE || 'Scan · Order · Enjoy',
+
+  // Server
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  PORT: parseInt(process.env.PORT || '5000'),
+  HOST: process.env.SERVER_HOST || '0.0.0.0',
+
+  // Database
+  DATABASE_URL: process.env.DATABASE_URL!,
+
+  // Session
+  SESSION_SECRET: process.env.SESSION_SECRET!,
+  SESSION_TIMEOUT_HOURS: parseInt(process.env.SESSION_TIMEOUT_HOURS || '8'),
+
+  // CORS
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000',
+
+  // Logging
+  LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+
+  // Web Push (VAPID)
+  VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || '',
+  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || '',
+  VAPID_SUBJECT: process.env.VAPID_SUBJECT || 'mailto:admin@restaurant.local',
+
+  // Internal service auth — shared secret between Express and Python AI service
+  INTERNAL_API_SECRET: process.env.INTERNAL_API_SECRET || '',
+
+  // URL of the Python AI microservice — differs between local dev and Docker
+  AI_SERVICE_URL: process.env.AI_SERVICE_URL || 'http://localhost:8001',
+
+  // Default credentials — must be set via environment variables
+  DEFAULT_ADMIN_USERNAME: process.env.DEFAULT_ADMIN_USERNAME || 'admin',
+  DEFAULT_ADMIN_PASSWORD: process.env.DEFAULT_ADMIN_PASSWORD || '',
+  DEFAULT_KITCHEN_USERNAME: process.env.DEFAULT_KITCHEN_USERNAME || 'kitchen',
+  DEFAULT_KITCHEN_PASSWORD: process.env.DEFAULT_KITCHEN_PASSWORD || '',
+  DEFAULT_WAITER_USERNAME: process.env.DEFAULT_WAITER_USERNAME || 'waiter',
+  DEFAULT_WAITER_PASSWORD: process.env.DEFAULT_WAITER_PASSWORD || '',
+};

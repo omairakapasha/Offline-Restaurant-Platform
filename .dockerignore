@@ -1,0 +1,27 @@
+# Dependencies — reinstalled fresh inside the image
+**/node_modules
+
+# Env / secrets — provided at runtime via docker-compose
+.env
+.env.*
+!.env.example
+
+# Build output & caches
+**/dist
+**/*.tsbuildinfo
+**/__pycache__
+**/*.pyc
+
+# VCS & tooling
+.git
+.gitignore
+.kiro
+.claude
+
+# Logs & OS cruft
+*.log
+.DS_Store
+Thumbs.db
+
+# Docs / personal drafts (not needed in the image)
+Linkedin_Post.txt

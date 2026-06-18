@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+yarn.lock
+package-lock.json
+# Note: pnpm-lock.yaml is committed for reproducible installs (pnpm workspace)
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+artifacts/**/.env
+artifacts/**/.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Database
+*.db
+*.sqlite
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Personal / marketing drafts (not part of the software)
+Linkedin_Post.txt
+*linkedin_video_script*.pdf
+
+# Python (legacy)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/

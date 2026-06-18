@@ -1,0 +1,6 @@
+packages:
+  - 'artifacts/api-server'
+  - 'lib/db'
+allowBuilds:
+  es5-ext: false
+  esbuild: false
