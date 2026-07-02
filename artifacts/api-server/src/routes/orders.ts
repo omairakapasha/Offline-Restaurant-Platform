@@ -552,8 +552,14 @@ router.patch(
       estimatedReadyTime = new Date(Date.now() + maxPrepMin * 60 * 1000);
     }
 
+    const isCancelling = status === 'cancelled';
     await db.update(orders)
-      .set({ status, updated_at: new Date(), ...(estimatedReadyTime ? { estimated_ready_time: estimatedReadyTime } : {}) })
+      .set({
+        status,
+        updated_at: new Date(),
+        ...(estimatedReadyTime ? { estimated_ready_time: estimatedReadyTime } : {}),
+        ...(isCancelling ? { cancelled_at: new Date(), cancellation_reason: notes || 'Cancelled by staff' } : {}),
+      })
       .where(eq(orders.id, id));
 
     await db.insert(order_status_history).values({
@@ -580,7 +586,22 @@ router.patch(
       sendOrderReadyNotification(id, withTable?.tableNumber ?? 0).catch(() => {});
     }
 
-    if (status === 'served' && order.table_id) {
+    // On cancellation from an active state, restore stock for finite-stock items.
+    if (isCancelling && (oldStatus === 'received' || oldStatus === 'preparing' || oldStatus === 'ready')) {
+      const cancelledItems = await db
+        .select({ menuItemId: order_items.menu_item_id, quantity: order_items.quantity })
+        .from(order_items)
+        .where(eq(order_items.order_id, id));
+      for (const item of cancelledItems) {
+        await db
+          .update(menu_items)
+          .set({ stock_quantity: sql`${menu_items.stock_quantity} + ${item.quantity}` })
+          .where(and(eq(menu_items.id, item.menuItemId), ne(menu_items.stock_quantity, -1)));
+      }
+    }
+
+    // Free the table when an order leaves the active set (served or cancelled).
+    if ((status === 'served' || isCancelling) && order.table_id) {
       const stillBusy = await tableHasOtherActiveOrders(order.table_id, id);
       if (!stillBusy) {
         await db.update(tables).set({ status: 'available' }).where(eq(tables.id, order.table_id));

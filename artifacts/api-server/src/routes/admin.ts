@@ -229,10 +229,12 @@ router.get('/admin/analytics', requireSession, requireRole('admin'), async (req:
     since.setDate(since.getDate() - days);
     since.setHours(0, 0, 0, 0);
 
+    // Revenue only counts completed (served) orders; order count tracks all
+    // orders placed that day regardless of outcome, for volume visibility.
     const revenueByDay = await db
       .select({
         date: sql<string>`DATE(${orders.created_at})`,
-        revenue: sql<string>`SUM(${orders.total_amount})`,
+        revenue: sql<string>`SUM(CASE WHEN ${orders.status} = 'served' THEN ${orders.total_amount} ELSE 0 END)`,
         orderCount: count(orders.id),
       })
       .from(orders)

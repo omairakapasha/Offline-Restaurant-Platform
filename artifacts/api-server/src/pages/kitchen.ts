@@ -31,7 +31,7 @@ export function kitchenPage(): string {
     @keyframes wspulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
 
     /* STATS BAR */
-    .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
+    .stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
     .stat { background: var(--surface); padding: 16px 20px; text-align: center; }
     .stat-val { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; color: var(--brand); display: block; line-height: 1; }
     .stat-label { font-size: .76rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
@@ -105,7 +105,6 @@ export function kitchenPage(): string {
   <div class="stats">
     <div class="stat"><span class="stat-val display" id="statPending">—</span><span class="stat-label">Pending</span></div>
     <div class="stat"><span class="stat-val display" id="statPreparing">—</span><span class="stat-label">Preparing</span></div>
-    <div class="stat"><span class="stat-val display" id="statRevenue">—</span><span class="stat-label">Today's Revenue</span></div>
   </div>
   <div class="orders-grid" id="ordersGrid"></div>
 </div>
@@ -113,7 +112,7 @@ export function kitchenPage(): string {
 <div class="notif" id="notif">New Order!</div>
 
 <script>
-  const ICONS = { clock: \`${icon('clock')}\`, play: \`${icon('play')}\`, check: \`${icon('check')}\`, utensils: \`${icon('utensils')}\` };
+  const ICONS = { clock: \`${icon('clock')}\`, play: \`${icon('play')}\`, check: \`${icon('check')}\`, utensils: \`${icon('utensils')}\`, close: \`${icon('close')}\` };
   let ws = null;
   let knownIds = new Set();
   let refreshTimer = null;
@@ -148,8 +147,7 @@ export function kitchenPage(): string {
     wsActive = true;
     connectWS();
     loadOrders();
-    loadStats();
-    refreshTimer = setInterval(() => { loadOrders(); loadStats(); }, 30000);
+    refreshTimer = setInterval(loadOrders, 30000);
   }
 
   async function doLogout() {
@@ -182,7 +180,6 @@ export function kitchenPage(): string {
           showNotif('🔔 New Order — Table ' + event.order.tableNumber + (event.order.customerName ? ' · ' + event.order.customerName : ''));
           playBeep();
           loadOrders();
-          loadStats();
         } else if (event.type === 'order:updated') {
           loadOrders();
         } else if (event.type === 'stock:low') {
@@ -224,13 +221,6 @@ export function kitchenPage(): string {
     document.getElementById('statPreparing').textContent = orders.filter(o => o.status === 'preparing').length;
   }
 
-  async function loadStats() {
-    const res = await fetch('/api/stats').catch(() => null);
-    if (!res || !res.ok) return;
-    const s = await res.json();
-    document.getElementById('statRevenue').textContent = 'Rs. ' + Math.round(parseFloat(s.totalRevenue || '0'));
-  }
-
   function renderOrders(orders) {
     const grid = document.getElementById('ordersGrid');
     if (!orders.length) {
@@ -249,9 +239,10 @@ export function kitchenPage(): string {
       const flash = flashIds.has(order.id) ? 'new-flash' : '';
 
       let btn = '';
-      if (order.status === 'received') btn = \`<button class="btn btn-primary btn-block" onclick="advStatus('\${order.id}','preparing')">\${ICONS.play} Start Preparing</button>\`;
-      else if (order.status === 'preparing') btn = \`<button class="btn btn-success btn-block" onclick="advStatus('\${order.id}','ready')">\${ICONS.check} Mark Ready</button>\`;
-      else if (order.status === 'ready') btn = \`<button class="btn btn-ghost btn-block" onclick="advStatus('\${order.id}','served')">\${ICONS.utensils} Mark Served</button>\`;
+      if (order.status === 'received') btn = \`<button class="btn btn-primary" style="flex:1" onclick="advStatus('\${order.id}','preparing')">\${ICONS.play} Start Preparing</button>\`;
+      else if (order.status === 'preparing') btn = \`<button class="btn btn-success" style="flex:1" onclick="advStatus('\${order.id}','ready')">\${ICONS.check} Mark Ready</button>\`;
+      else if (order.status === 'ready') btn = \`<button class="btn btn-ghost" style="flex:1" onclick="advStatus('\${order.id}','served')">\${ICONS.utensils} Mark Served</button>\`;
+      const cancelBtn = \`<button class="btn btn-danger btn-sm" onclick="cancelOrder('\${order.id}')" title="Cancel order">\${ICONS.close} Cancel</button>\`;
 
       const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const itemRows = (order.items || []).map(i =>
@@ -272,7 +263,7 @@ export function kitchenPage(): string {
         </div>
         <div class="order-items">\${itemRows}</div>
         <div class="order-total">Rs. \${parseFloat(order.totalAmount).toFixed(0)}</div>
-        <div class="action-btns">\${btn}</div>
+        <div class="action-btns">\${btn}\${cancelBtn}</div>
       </div>\`;
     }).join('');
   }
@@ -284,6 +275,17 @@ export function kitchenPage(): string {
     });
     if (res.status === 401) { doLogout(); return; }
     loadOrders();
+  }
+
+  async function cancelOrder(id) {
+    if (!confirm('Cancel this order and remove it from the queue? Any reserved stock will be restored.')) return;
+    const res = await fetch('/api/orders/' + id + '/status', {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status:'cancelled', notes:'Cancelled by kitchen' })
+    });
+    if (res.status === 401) { doLogout(); return; }
+    if (res.ok) { showNotif('Order cancelled'); loadOrders(); loadStats(); }
+    else { showNotif('Could not cancel order'); }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
