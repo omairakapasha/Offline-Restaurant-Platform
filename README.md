@@ -158,15 +158,12 @@ cd packages/ai-chat && uvicorn main:app --port 8001
 <br>
 
 <p align="center">
-  <img src="./assets/Screenshot%202026-07-19%20135146.png" width="45%">
-  <img src="./assets/Screenshot%202026-07-19%20135232.png" width="45%">
-  <img src="./assets/Screenshot%202026-07-19%20135246.png" width="45%">
-  <img src="./assets/Screenshot%202026-07-19%20135315.png" width="45%">
-  <img src="./assets/Screenshot%202026-07-19%20135335.png" width="45%">
-  <img src="./assets/Screenshot%202026-07-19%20135404.png" width="45%">
-  <img src="./assets/Screenshot%202026-07-19%20135422.png" width="45%">
-  <img src="./assets/Screenshot%202026-07-19%20135537.png" width="45%">
-  <img src="./assets/Screenshot%202026-07-19%20141125.png" width="90%">
+  <img src="./assets/Admin%20Sign%20In.png" width="45%">
+  <img src="./assets/Ai%20Assistant.png" width="45%">
+  <img src="./assets/Kitchen%20Login.png" width="45%">
+  <img src="./assets/Kitchen%20Queue.png" width="45%">
+  <img src="./assets/Waiter%20Sign%20In.png" width="45%">
+  <img src="./assets/Waiter%20Queue.png" width="45%">
 </p>
 
 </details>
