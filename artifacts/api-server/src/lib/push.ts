@@ -4,9 +4,6 @@ import { eq } from 'drizzle-orm';
 import { db, push_subscriptions } from '@workspace/db';
 import { logger } from './logger.js';
 
-// Table is created by migration 0001_push_subscriptions.sql — nothing to do here.
-export async function initPushSubscriptions(): Promise<void> {}
-
 export async function storePushSubscription(orderId: string, sub: WebPushSub): Promise<void> {
   await db
     .insert(push_subscriptions)

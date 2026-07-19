@@ -121,7 +121,7 @@ vi.mock('@workspace/db', () => {
 });
 
 // Side-effecting collaborators — stubbed so the handler stays in-process.
-vi.mock('../../lib/ws', () => ({ broadcast: vi.fn() }));
+vi.mock('../../lib/websocket', () => ({ broadcast: vi.fn(), setWsManager: vi.fn() }));
 vi.mock('../../lib/push.js', () => ({ sendOrderReadyNotification: vi.fn(() => Promise.resolve()) }));
 vi.mock('../../lib/auditLog.js', () => ({ writeAuditLog: vi.fn(() => Promise.resolve()) }));
 

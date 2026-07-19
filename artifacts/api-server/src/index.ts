@@ -6,19 +6,16 @@ import { WebSocketServer } from 'ws';
 import { createServer } from 'http';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import dotenv from 'dotenv';
 
 import { logger } from './lib/logger';
 import config from './config';
-import { KitchenWebSocketManager } from './lib/websocket';
-import { setWsManager } from './lib/ws';
+import { KitchenWebSocketManager, setWsManager } from './lib/websocket';
 import { db, pool as dbPool, sessions, staff } from '@workspace/db';
 import { eq, and, gt, lt, sql } from 'drizzle-orm';
 import { seedIfEmpty } from './seed';
 
 import compression from 'compression';
 import webpush from 'web-push';
-import { initPushSubscriptions } from './lib/push.js';
 import { runMigrations } from './lib/migrate.js';
 import authRoutes from './routes/auth';
 import menuRoutes from './routes/menu';
@@ -38,8 +35,6 @@ import { receiptPage } from './pages/receipt';
 
 import { errorHandler } from './middlewares/errorHandler';
 import { csrfCheck } from './middlewares/csrfCheck';
-
-dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../.env') });
 
 // Startup validation
 if (!config.DATABASE_URL) throw new Error('DATABASE_URL is required');
@@ -62,7 +57,9 @@ setWsManager(kitchenWs);
 // Security headers
 app.use(helmet({
   contentSecurityPolicy: {
+    useDefaults: true,
     directives: {
+      upgradeInsecureRequests: null,
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
       // Helmet sets script-src-attr to 'none' by default, which blocks inline
@@ -72,7 +69,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'https://images.unsplash.com'],
-      connectSrc: ["'self'", 'ws:', 'wss:'],
+      connectSrc: ["'self'", 'ws:', 'wss:', 'https://cdn.jsdelivr.net'],
     },
   },
 }));
@@ -138,19 +135,6 @@ app.use('/api/push', pushRoutes); // POST /api/push/subscribe
 
 // Error handling (must be last)
 app.use(errorHandler);
-
-function parseCookieHeader(header: string | undefined): Record<string, string> {
-  if (!header) return {};
-  return Object.fromEntries(
-    header.split(';').map(pair => {
-      const idx = pair.indexOf('=');
-      return idx === -1
-        ? [pair.trim(), '']
-        : [pair.slice(0, idx).trim(), decodeURIComponent(pair.slice(idx + 1).trim())];
-    })
-  );
-}
-
 // WebSocket — only accept authenticated kitchen/admin connections on /api/ws/kitchen
 httpServer.on('upgrade', async (req, socket, head) => {
   if (req.url !== '/api/ws/kitchen') {
@@ -158,7 +142,9 @@ httpServer.on('upgrade', async (req, socket, head) => {
     return;
   }
 
-  const cookies = parseCookieHeader(req.headers.cookie);
+  const cookies = Object.fromEntries(
+    (req.headers.cookie ?? '').split(';').map(p => { const i = p.indexOf('='); return i === -1 ? [p.trim(), ''] : [p.slice(0, i).trim(), decodeURIComponent(p.slice(i + 1).trim())]; })
+  );
   const token = cookies['session'];
 
   if (!token) {
@@ -206,12 +192,6 @@ async function pruneExpiredSessions() {
 async function start() {
   // Migrations must run before anything else touches the DB schema
   await runMigrations();
-
-  try {
-    await initPushSubscriptions();
-  } catch (err) {
-    logger.warn('push_subscriptions table init failed — push notifications disabled', { err });
-  }
 
   try {
     await seedIfEmpty();

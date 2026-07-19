@@ -22,6 +22,10 @@ export default {
   BRAND_NAME: process.env.BRAND_NAME || 'The Corner Table',
   BRAND_TAGLINE: process.env.BRAND_TAGLINE || 'Scan · Order · Enjoy',
 
+  // Currency configuration
+  CURRENCY_SYMBOL: process.env.CURRENCY_SYMBOL || 'QAR',
+  CURRENCY_CODE: process.env.CURRENCY_CODE || 'QAR',
+
   // Server
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '5000'),
@@ -35,7 +39,7 @@ export default {
   SESSION_TIMEOUT_HOURS: parseInt(process.env.SESSION_TIMEOUT_HOURS || '8'),
 
   // CORS
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5000',
 
   // Logging
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',

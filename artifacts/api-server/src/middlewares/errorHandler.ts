@@ -46,7 +46,7 @@ export function errorHandler(
     return res.status(httpStatus).json({ error: isParse ? 'Invalid JSON body' : (err.message || 'Bad request') });
   }
 
-  logger.error('Unhandled error:', err);
+  logger.error({ err }, 'Unhandled error');
   res.status(500).json({
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined,

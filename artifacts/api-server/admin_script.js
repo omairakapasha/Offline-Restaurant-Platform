@@ -1,344 +1,5 @@
-import { BRAND, CURRENCY, fontLinks } from './theme';
 
-export function adminPage(): string {
-  return /* html */`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — ${BRAND.name}</title>
-  ${fontLinks()}
-  <style>
-    :root {
-      --font-display:'Caveat','Comic Sans MS',cursive;
-      --font-body:'Nunito',system-ui,-apple-system,sans-serif;
-      --bg:#F7F3EC; --surface:#FFFDF8; --surface-2:#F2EBDF; --border:#E7DFD2;
-      --brand:#C8521A; --brand-dark:#9E3D0F; --brand-light:#FBEADD;
-      --text:#2A2520; --muted:#6F6457;
-      --green:#1A8045; --green-bg:#E6F4EC;
-      --red:#DC2626; --red-bg:#FDECEC;
-      --blue:#1D4ED8; --blue-bg:#E8EFFE;
-      --yellow:#B45309; --yellow-bg:#FCF1DC;
-      --purple:#EDE6FB; --purple-text:#5B21B6;
-      --radius:16px; --radius-sm:12px; --shadow:0 6px 22px rgba(74,52,28,.10);
-      --ring:0 0 0 3px rgba(200,82,26,.22);
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:var(--font-body); background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; }
-
-    /* LOGIN */
-    #loginView { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
-    .login-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:40px; max-width:380px; width:100%; box-shadow:var(--shadow); }
-    .login-card h1 { font-family:var(--font-display); font-size:2.4rem; margin-bottom:4px; color:var(--brand); }
-    .login-card p { color:var(--muted); font-size:0.88rem; margin-bottom:28px; }
-    .field { margin-bottom:16px; }
-    .field label { display:block; font-size:0.78rem; font-weight:600; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
-    .field input, .field select { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:0.9rem; outline:none; transition:border .2s; background:var(--bg); }
-    .field input:focus, .field select:focus { border-color:var(--brand); background:#fff; }
-    .btn { padding:10px 20px; border-radius:8px; font-size:0.88rem; font-weight:600; cursor:pointer; border:none; transition:all .18s; }
-    .btn-primary { background:var(--brand); color:#fff; }
-    .btn-primary:hover { background:var(--brand-dark); }
-    .btn-secondary { background:var(--bg); color:var(--text); border:1.5px solid var(--border); }
-    .btn-secondary:hover { border-color:var(--brand); color:var(--brand); }
-    .btn-danger { background:var(--red-bg); color:var(--red); border:1.5px solid #FECACA; }
-    .btn-danger:hover { background:var(--red); color:#fff; }
-    .btn-sm { padding:6px 12px; font-size:0.8rem; }
-    .login-err { color:var(--red); font-size:0.85rem; margin-top:10px; min-height:20px; }
-    .login-btn { width:100%; padding:12px; margin-top:4px; font-size:0.95rem; border-radius:8px; }
-
-    /* LAYOUT */
-    #adminView { display:none; }
-    .topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; position:sticky; top:0; z-index:100; }
-    .topbar h1 { font-family:var(--font-display); font-size:1.7rem; color:var(--brand); }
-    .topbar-right { display:flex; align-items:center; gap:12px; }
-    .staff-badge { font-size:0.82rem; color:var(--muted); }
-    .tabs { background:var(--surface); border-bottom:1px solid var(--border); padding:0 24px; display:flex; gap:0; }
-    .tab { padding:14px 20px; font-size:0.88rem; font-weight:600; cursor:pointer; border-bottom:3px solid transparent; color:var(--muted); transition:all .18s; white-space:nowrap; }
-    .tab:hover { color:var(--text); }
-    .tab.active { color:var(--brand); border-bottom-color:var(--brand); }
-    .panel { display:none; padding:24px; max-width:1200px; margin:0 auto; }
-    .panel.active { display:block; }
-
-    /* STAT CARDS */
-    .stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
-    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
-    .stat-label { font-size:0.78rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; }
-    .stat-value { font-family:var(--font-display); font-size:2.4rem; font-weight:700; color:var(--brand-dark); line-height:1; }
-
-    /* TABLES */
-    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); margin-bottom:20px; }
-    .card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-    .card-title { font-weight:700; font-size:1rem; }
-    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-    th { text-align:left; padding:10px 12px; background:var(--bg); border-bottom:1px solid var(--border); font-weight:600; font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
-    td { padding:10px 12px; border-bottom:1px solid var(--border); }
-    tr:last-child td { border-bottom:none; }
-    tr:hover td { background:var(--surface-2); }
-
-    /* BADGE */
-    .badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:20px; font-size:0.72rem; font-weight:600; white-space:nowrap; }
-    .badge-admin { background:var(--purple,#EDE9FE); color:var(--purple-text,#5B21B6); }
-    .badge-kitchen { background:var(--yellow-bg); color:var(--yellow); }
-    .badge-waiter { background:var(--blue-bg); color:var(--blue); }
-    .badge-green { background:var(--green-bg); color:var(--green); }
-    .badge-red { background:var(--red-bg); color:var(--red); }
-    .badge-yellow { background:var(--yellow-bg); color:var(--yellow); }
-    .badge-received { background:#FEF3C7; color:#92400E; }
-    .badge-preparing { background:#DBEAFE; color:#1E40AF; }
-    .badge-ready { background:#DCFCE7; color:#15803D; }
-    .badge-served { background:var(--surface-2); color:var(--muted); }
-    .badge-cancelled { background:#FEE2E2; color:#B91C1C; }
-
-    /* FORM */
-    .form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-bottom:16px; }
-    .form-actions { display:flex; gap:8px; margin-top:4px; }
-
-    /* MODAL */
-    .overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:300; display:none; align-items:center; justify-content:center; padding:16px; }
-    .overlay.show { display:flex; }
-    .modal { background:var(--surface); border-radius:var(--radius); padding:24px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.2); }
-    .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .modal-head h3 { font-weight:700; font-size:1.05rem; }
-    .modal-close { background:none; border:1.5px solid var(--border); border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; color:var(--muted); }
-
-    .toast { position:fixed; bottom:24px; right:24px; background:var(--text); color:var(--surface); padding:12px 20px; border-radius:var(--pill,999px); font-size:0.88rem; font-weight:700; z-index:999; opacity:0; transform:translateY(10px); transition:all .3s; pointer-events:none; box-shadow:var(--shadow); }
-    .toast.show { opacity:1; transform:translateY(0); }
-    .toast.error { background:var(--red); }
-
-    .copyable { cursor:pointer; text-decoration:underline; text-decoration-style:dotted; color:var(--blue); }
-    .copyable:hover { color:var(--brand); }
-
-    @media(max-width:600px) { .form-grid { grid-template-columns:1fr; } .tabs { overflow-x:auto; } }
-  </style>
-</head>
-<body>
-
-<!-- LOGIN -->
-<div id="loginView">
-  <div class="login-card">
-    <h1>Admin Panel</h1>
-    <p>Sign in with your admin account</p>
-    <div class="field"><label>Username</label><input type="text" id="loginUser" autocomplete="username"></div>
-    <div class="field"><label>Password</label><input type="password" id="loginPass" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="login-err" id="loginErr"></div>
-    <button class="btn btn-primary login-btn" onclick="doLogin()">Sign In</button>
-  </div>
-</div>
-
-<!-- ADMIN VIEW -->
-<div id="adminView">
-  <div class="topbar">
-    <h1>Admin</h1>
-    <div class="topbar-right">
-      <button class="btn btn-secondary btn-sm" onclick="doLogout()">Logout</button>
-    </div>
-  </div>
-  <div class="tabs">
-    <div class="tab active" id="tab-overview" onclick="showTab('overview')">Overview</div>
-    <div class="tab" id="tab-menu" onclick="showTab('menu')">Menu</div>
-    <div class="tab" id="tab-staff" onclick="showTab('staff')">Staff</div>
-    <div class="tab" id="tab-tables" onclick="showTab('tables')">Tables</div>
-    <div class="tab" id="tab-analytics" onclick="showTab('analytics')">Analytics</div>
-    <div class="tab" id="tab-inventory" onclick="showTab('inventory')">Inventory</div>
-    <div class="tab" id="tab-audit" onclick="showTab('audit')">Audit Log</div>
-  </div>
-
-  <!-- OVERVIEW -->
-  <div class="panel active" id="panel-overview">
-    <div class="stats-grid" id="statsGrid">
-      <div class="stat-card"><div class="stat-label">Orders Today</div><div class="stat-value" id="st-orders">—</div></div>
-      <div class="stat-card"><div class="stat-label">Revenue Today</div><div class="stat-value" id="st-revenue">—</div></div>
-      <div class="stat-card"><div class="stat-label">Active Orders</div><div class="stat-value" id="st-active">—</div></div>
-      <div class="stat-card"><div class="stat-label">Avg Prep Time</div><div class="stat-value" id="st-prep">—</div></div>
-    </div>
-    <div class="card">
-      <div class="card-head">
-        <span class="card-title">Recent Orders</span>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-secondary btn-sm" onclick="loadOverview()">Refresh</button>
-          <div style="position:relative;display:inline-block" id="exportDrop">
-            <button class="btn btn-secondary btn-sm" onclick="toggleExportMenu()" style="gap:4px">Export ▾</button>
-            <div id="exportMenu" style="display:none;position:absolute;right:0;top:110%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px;z-index:50;min-width:180px;box-shadow:0 4px 12px rgba(0,0,0,.12)">
-              <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:4px 8px 6px">Orders</div>
-              <a href="/api/admin/export/orders?days=30"  class="btn btn-secondary btn-sm" style="display:block;margin-bottom:4px;text-align:left;text-decoration:none">Last 30 Days</a>
-              <a href="/api/admin/export/orders?days=90"  class="btn btn-secondary btn-sm" style="display:block;margin-bottom:4px;text-align:left;text-decoration:none">Last 90 Days</a>
-              <a href="/api/admin/export/orders?days=0"   class="btn btn-secondary btn-sm" style="display:block;margin-bottom:6px;text-align:left;text-decoration:none">All Time</a>
-              <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:4px 8px 6px;border-top:1px solid var(--border)">Other</div>
-              <a href="/api/admin/export/audit-log" class="btn btn-secondary btn-sm" style="display:block;margin-bottom:4px;text-align:left;text-decoration:none">Audit Log</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>ID</th><th>Table</th><th>Status</th><th>Items</th><th>Total</th><th>Time</th></tr></thead>
-        <tbody id="ordersBody"></tbody>
-      </table></div>
-    </div>
-  </div>
-
-  <!-- MENU -->
-  <div class="panel" id="panel-menu">
-    <div class="card">
-      <div class="card-head"><span class="card-title">Add Menu Item</span></div>
-      <div class="form-grid">
-        <div class="field"><label>Name *</label><input type="text" id="mn-name"></div>
-        <div class="field"><label>Price (${CURRENCY.symbol}) *</label><input type="number" id="mn-price" min="0" step="1"></div>
-        <div class="field"><label>Category *</label><input type="text" id="mn-cat" list="catlist"><datalist id="catlist"><option>Main Course<option>Appetizer<option>Bread<option>Dessert<option>Beverage</datalist></div>
-        <div class="field"><label>Prep Time (min)</label><input type="number" id="mn-prep" value="10" min="1"></div>
-        <div class="field"><label>Description</label><input type="text" id="mn-desc"></div>
-        <div class="field"><label>Image</label><div style="display:flex;gap:8px;align-items:center"><input type="text" id="mn-img" placeholder="URL or upload →" style="flex:1"><label class="btn btn-secondary btn-sm" style="cursor:pointer;white-space:nowrap;margin:0">📷 Upload<input type="file" accept="image/*" style="display:none" onchange="uploadMenuImage(this,'mn-img')"></label></div></div>
-        <div class="field"><label>Spice Level (0-3)</label><input type="number" id="mn-spice" value="0" min="0" max="3"></div>
-        <div class="field"><label>Allergens (comma separated)</label><input type="text" id="mn-allergens"></div>
-        <div class="field"><label>Quantity (-1 for unlimited)</label><input type="number" id="mn-qty" value="-1" min="-1" step="1"></div>
-      </div>
-      <div class="form-grid" style="grid-template-columns:repeat(3,auto);gap:16px;align-items:center;">
-        <label style="display:flex;gap:6px;align-items:center;font-size:0.88rem;cursor:pointer"><input type="checkbox" id="mn-veg"> Vegetarian</label>
-        <label style="display:flex;gap:6px;align-items:center;font-size:0.88rem;cursor:pointer"><input type="checkbox" id="mn-popular"> Popular</label>
-      </div>
-      <div class="form-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="addMenuItem()">Add Item</button></div>
-    </div>
-    <div class="card">
-      <div class="card-head">
-        <span class="card-title">All Menu Items</span>
-        <div style="display:flex;gap:6px">
-          <a href="/api/admin/export/menu" class="btn btn-secondary btn-sm" style="text-decoration:none">Export CSV</a>
-          <button class="btn btn-secondary btn-sm" onclick="loadMenu()">Refresh</button>
-        </div>
-      </div>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="menuBody"></tbody>
-      </table></div>
-    </div>
-  </div>
-
-  <!-- STAFF -->
-  <div class="panel" id="panel-staff">
-    <div class="card">
-      <div class="card-head"><span class="card-title">Add Staff Member</span></div>
-      <div class="form-grid">
-        <div class="field"><label>Username *</label><input type="text" id="sf-user"></div>
-        <div class="field"><label>Full Name *</label><input type="text" id="sf-name"></div>
-        <div class="field"><label>Password *</label><input type="password" id="sf-pass"></div>
-        <div class="field"><label>Role *</label><select id="sf-role"><option value="kitchen">Kitchen</option><option value="waiter">Waiter</option><option value="admin">Admin</option></select></div>
-      </div>
-      <div class="form-actions"><button class="btn btn-primary" onclick="addStaff()">Add Staff</button></div>
-    </div>
-    <div class="card">
-      <div class="card-head"><span class="card-title">Staff Members</span><button class="btn btn-secondary btn-sm" onclick="loadStaff()">Refresh</button></div>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>Username</th><th>Full Name</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
-        <tbody id="staffBody"></tbody>
-      </table></div>
-    </div>
-  </div>
-
-  <!-- TABLES -->
-  <div class="panel" id="panel-tables">
-    <div class="card">
-      <div class="card-head"><span class="card-title">Add Table</span></div>
-      <div class="form-grid" style="grid-template-columns:repeat(2,1fr);">
-        <div class="field"><label>Table Number *</label><input type="number" id="tbl-num" min="1"></div>
-        <div class="field"><label>Capacity</label><input type="number" id="tbl-cap" value="4" min="1"></div>
-      </div>
-      <div class="form-actions"><button class="btn btn-primary" onclick="addTable()">Add Table</button></div>
-    </div>
-    <div class="card">
-      <div class="card-head"><span class="card-title">Restaurant Tables</span><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="downloadAllQR()">⬇️ All QRs</button><button class="btn btn-secondary btn-sm" onclick="loadTables()">Refresh</button></div></div>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>Table #</th><th>Capacity</th><th>Status</th><th>QR Code</th><th>Actions</th></tr></thead>
-        <tbody id="tablesBody"></tbody>
-      </table></div>
-    </div>
-  </div>
-
-  <!-- ANALYTICS -->
-  <div class="panel" id="panel-analytics">
-    <div class="card">
-      <div class="card-head">
-        <span class="card-title">Revenue &amp; Orders</span>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-primary btn-sm" id="btn-7d" onclick="setAnalyticsPeriod(7,this)">7 Days</button>
-          <button class="btn btn-secondary btn-sm" id="btn-30d" onclick="setAnalyticsPeriod(30,this)">30 Days</button>
-        </div>
-      </div>
-      <canvas id="revenueChart"></canvas>
-    </div>
-    <div class="card" style="margin-top:20px">
-      <div class="card-head"><span class="card-title">Popular Items</span><span style="font-size:0.78rem;color:var(--muted)">by units ordered</span></div>
-      <canvas id="popularChart"></canvas>
-    </div>
-    <div class="card" style="margin-top:20px">
-      <div class="card-head"><span class="card-title">Staff Performance</span><span style="font-size:0.78rem;color:var(--muted)">orders prepared &amp; avg prep time</span></div>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>Staff Member</th><th>Orders Prepared</th><th>Avg Prep Time</th></tr></thead>
-        <tbody id="staffPerfBody"><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">Load analytics to view</td></tr></tbody>
-      </table></div>
-    </div>
-  </div>
-
-  <!-- INVENTORY -->
-  <div class="panel" id="panel-inventory">
-    <div class="card">
-      <div class="card-head">
-        <span class="card-title">Stock Levels</span>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-secondary btn-sm" onclick="loadInventory()">Refresh</button>
-        </div>
-      </div>
-      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">Items with finite stock only. Items set to unlimited (−1) are excluded. Click a quantity to edit.</p>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Status</th><th>Restock</th></tr></thead>
-        <tbody id="inventoryBody"></tbody>
-      </table></div>
-    </div>
-  </div>
-
-  <!-- AUDIT LOG -->
-  <div class="panel" id="panel-audit">
-    <div class="card">
-      <div class="card-head">
-        <span class="card-title">Audit Log</span>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <a href="/api/admin/export/audit-log" class="btn btn-secondary btn-sm" style="text-decoration:none">Export CSV</a>
-          <button class="btn btn-secondary btn-sm" onclick="loadAuditLog(true)">Refresh</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-        <input type="text" id="audit-search" placeholder="Search staff, action, entity…" style="flex:1;min-width:180px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;outline:none" oninput="filterAuditLog()">
-        <select id="audit-action" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;outline:none;background:var(--bg)" onchange="filterAuditLog()">
-          <option value="">All actions</option>
-          <option value="staff:">Staff</option>
-          <option value="menu:">Menu</option>
-          <option value="table:">Tables</option>
-          <option value="order:">Orders</option>
-        </select>
-      </div>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>Time</th><th>Staff</th><th>Action</th><th>Entity</th><th>Details</th><th>IP</th></tr></thead>
-        <tbody id="auditBody"></tbody>
-      </table></div>
-      <div id="auditPager" style="margin-top:14px;text-align:center"></div>
-    </div>
-  </div>
-
-<!-- EDIT MODAL -->
-<div class="overlay" id="editOverlay">
-  <div class="modal">
-    <div class="modal-head"><h3 id="editTitle">Edit</h3><button class="modal-close" onclick="closeModal()">×</button></div>
-    <div id="editBody"></div>
-    <div class="form-actions" style="margin-top:20px">
-      <button class="btn btn-primary" id="editSaveBtn" onclick="saveEdit()">Save</button>
-      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
+  const CURRENCY_SYMBOL = 'QAR';
   let currentUser = null;
   let editCtx = null;
   let editTableId = null;
@@ -365,6 +26,7 @@ export function adminPage(): string {
   function showAdmin() {
     document.getElementById('loginView').style.display = 'none';
     document.getElementById('adminView').style.display = 'block';
+    document.getElementById('staffBadge').textContent = currentUser.full_name + ' (' + currentUser.role + ')';
     loadOverview();
   }
   function showErr(msg) { document.getElementById('loginErr').textContent = msg || ''; }
@@ -408,22 +70,26 @@ export function adminPage(): string {
       if (sRes.ok) {
         const s = await sRes.json();
         document.getElementById('st-orders').textContent = s.totalOrders;
-        document.getElementById('st-revenue').textContent = '${CURRENCY.symbol} ' + parseFloat(s.totalRevenue||0).toFixed(0);
+        document.getElementById('st-revenue').textContent = CURRENCY_SYMBOL + ' ' + parseFloat(s.totalRevenue||0).toFixed(0);
         document.getElementById('st-active').textContent = s.activeOrders;
         document.getElementById('st-prep').textContent = (s.avgPrepTimeMinutes||0) + ' min';
       }
       if (oRes.ok) {
         const orders = await oRes.json();
         document.getElementById('ordersBody').innerHTML = orders.map(o =>
-          '<tr><td style="font-family:monospace;font-size:.75rem">' + o.id.slice(-8).toUpperCase() + '</td>' +
-          '<td>Table ' + (o.tableNumber || '?') + '</td>' +
-          '<td><span class="badge badge-' + o.status + '">' + o.status + '</span></td>' +
-          '<td>' + (o.itemCount||0) + ' items</td>' +
-          '<td>${CURRENCY.symbol} ' + parseFloat(o.totalAmount||0).toFixed(0) + '</td>' +
-          '<td>' + new Date(o.createdAt).toLocaleTimeString() + '</td></tr>'
+          '<tr>' +
+          '<td class="nowrap" style="font-family:monospace;font-size:.75rem">' + o.id.slice(-8).toUpperCase() + '</td>' +
+          '<td class="nowrap">Table ' + (o.tableNumber || '?') + '</td>' +
+          '<td class="nowrap"><span class="badge badge-' + o.status + '">' + o.status + '</span></td>' +
+          '<td class="nowrap">' + (o.itemCount||0) + ' items</td>' +
+          '<td class="nowrap">' + CURRENCY_SYMBOL + ' ' + parseFloat(o.totalAmount||0).toFixed(0) + '</td>' +
+          '<td class="nowrap">' + new Date(o.createdAt).toLocaleTimeString() + '</td></tr>'
         ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">No orders</td></tr>';
       }
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+      console.error('Failed to load orders:', e);
+      toast('Failed to load orders', true);
+    }
   }
 
   // --- MENU ---
@@ -433,14 +99,14 @@ export function adminPage(): string {
     const items = await r.json();
     document.getElementById('menuBody').innerHTML = items.map(i =>
       '<tr>' +
-      '<td>' + esc(i.name) + '</td>' +
-      '<td>' + esc(i.category) + '</td>' +
-      '<td>${CURRENCY.symbol} ' + parseFloat(i.price).toFixed(0) + '</td>' +
-      '<td>' +
+      '<td class="name-col">' + esc(i.name) + '</td>' +
+      '<td class="nowrap">' + esc(i.category) + '</td>' +
+      '<td class="nowrap">' + CURRENCY_SYMBOL + ' ' + parseFloat(i.price).toFixed(0) + '</td>' +
+      '<td class="nowrap">' +
         (i.archived ? '<span class="badge badge-red">Archived</span>' :
           (i.available ? '<span class="badge badge-green">Available</span>' : '<span class="badge" style="background:#F3F4F6;color:var(--muted)">Unavailable</span>')) +
       '</td>' +
-      '<td style="display:flex;gap:6px;flex-wrap:wrap">' +
+      '<td class="td-actions">' +
         '<button class="btn btn-secondary btn-sm" onclick="editMenuItem(' + i.id + ')">Edit</button>' +
         '<button class="btn btn-secondary btn-sm" onclick="toggleArchive(' + i.id + ',' + i.archived + ')">' + (i.archived ? 'Unarchive' : 'Archive') + '</button>' +
       '</td></tr>'
@@ -461,10 +127,9 @@ export function adminPage(): string {
       allergens: document.getElementById('mn-allergens').value.split(',').map(s=>s.trim()).filter(Boolean),
       is_vegetarian: document.getElementById('mn-veg').checked,
       popular: document.getElementById('mn-popular').checked,
-      stock_quantity: parseInt(document.getElementById('mn-qty').value) || -1,
     };
     const r = await fetch('/api/menu', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
-    if (r.ok) { toast('Menu item added'); loadMenu(); ['mn-name','mn-price','mn-cat','mn-desc','mn-img'].forEach(id => document.getElementById(id).value=''); document.getElementById('mn-qty').value='-1'; }
+    if (r.ok) { toast('Menu item added'); loadMenu(); ['mn-name','mn-price','mn-cat','mn-desc','mn-img'].forEach(id => document.getElementById(id).value=''); }
     else { const e=await r.json(); toast(e.error||'Failed to add item',true); }
   }
 
@@ -491,7 +156,6 @@ export function adminPage(): string {
       imageField('Image URL','edit-img',item.image_url||'') +
       field('Spice Level (0-3)','edit-spice',item.spice_level,'number') +
       field('Allergens','edit-allergens',(item.allergens||[]).join(', ')) +
-      field('Quantity (-1 for unlimited)','edit-qty',item.stock_quantity ?? -1,'number') +
       '<div style="display:flex;gap:16px;margin-top:8px">' +
         check('Vegetarian','edit-veg',item.is_vegetarian) +
         check('Popular','edit-popular',item.popular) +
@@ -510,7 +174,6 @@ export function adminPage(): string {
         spice_level: parseInt(val('edit-spice')),
         allergens: val('edit-allergens').split(',').map(s=>s.trim()).filter(Boolean),
         is_vegetarian: chk('edit-veg'), popular: chk('edit-popular'), available: chk('edit-avail'),
-        stock_quantity: parseInt(val('edit-qty')) || -1,
       };
       const r = await fetch('/api/menu/'+editMenuId, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
       if (r.ok) { toast('Menu item saved'); loadMenu(); closeModal(); }
@@ -550,12 +213,12 @@ export function adminPage(): string {
     const members = await r.json();
     document.getElementById('staffBody').innerHTML = members.map(m =>
       '<tr>' +
-      '<td>' + esc(m.username) + '</td>' +
-      '<td>' + esc(m.fullName) + '</td>' +
-      '<td><span class="badge badge-' + m.role + '">' + m.role + '</span></td>' +
-      '<td><span class="badge ' + (m.active?'badge-green':'badge-red') + '">' + (m.active?'Active':'Inactive') + '</span></td>' +
-      '<td>' + (m.lastLogin ? new Date(m.lastLogin).toLocaleDateString() : 'Never') + '</td>' +
-      '<td style="display:flex;gap:6px;flex-wrap:wrap">' +
+      '<td class="nowrap">' + esc(m.username) + '</td>' +
+      '<td class="name-col">' + esc(m.fullName) + '</td>' +
+      '<td class="nowrap"><span class="badge badge-' + m.role + '">' + m.role + '</span></td>' +
+      '<td class="nowrap"><span class="badge ' + (m.active?'badge-green':'badge-red') + '">' + (m.active?'Active':'Inactive') + '</span></td>' +
+      '<td class="nowrap">' + (m.lastLogin ? new Date(m.lastLogin).toLocaleDateString() : 'Never') + '</td>' +
+      '<td class="td-actions">' +
         '<button class="btn btn-secondary btn-sm" onclick="editStaff(' + m.id + ')">Edit</button>' +
         '<button class="btn btn-secondary btn-sm" onclick="openPasswordModal(' + m.id + ",'" + esc(m.username) + "')" + '">Password</button>' +
         (m.username !== currentUser?.username && m.active ? '<button class="btn btn-danger btn-sm" onclick="deactivateStaff(' + m.id + ",'" + esc(m.username) + "')" + '">Deactivate</button>' : '') +
@@ -650,15 +313,15 @@ export function adminPage(): string {
     const tbls = await r.json();
     document.getElementById('tablesBody').innerHTML = tbls.map(t =>
       '<tr>' +
-      '<td style="font-weight:700">Table ' + t.table_number + '</td>' +
-      '<td>' + t.capacity + ' seats</td>' +
-      '<td><span class="badge badge-green">' + (t.status||'available') + '</span></td>' +
+      '<td class="nowrap" style="font-weight:700">Table ' + t.table_number + '</td>' +
+      '<td class="nowrap">' + t.capacity + ' seats</td>' +
+      '<td class="nowrap"><span class="badge badge-green">' + (t.status||'available') + '</span></td>' +
       '<td><img src="/api/tables/' + t.id + '/qr" alt="QR Table ' + t.table_number + '" style="width:80px;height:80px;border-radius:6px;display:block"></td>' +
-      '<td style="display:flex;gap:6px;flex-wrap:wrap">' +
+      '<td class="td-actions">' +
         '<a class="btn btn-secondary btn-sm" href="/api/tables/' + t.id + '/qr" download="table-' + t.table_number + '-qr.png">Download</a>' +
         '<button class="btn btn-secondary btn-sm" onclick="printQR(' + t.id + ',' + t.table_number + ')">Print</button>' +
         '<button class="btn btn-secondary btn-sm" onclick="editTable(' + t.id + ')">Edit</button>' +
-        '<button class="btn btn-danger btn-sm" onclick="deactivateTable(' + t.id + ',' + t.table_number + ')">Deactivate</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteTable(' + t.id + ',' + t.table_number + ')">Delete</button>' +
       '</td>' +
       '</tr>'
     ).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">No tables</td></tr>';
@@ -687,11 +350,20 @@ export function adminPage(): string {
     openModal();
   }
 
-  async function deactivateTable(id, num) {
-    if (!confirm('Deactivate Table ' + num + '? Its QR code will stop accepting orders.')) return;
+  async function deleteTable(id, num) {
+    if (!confirm('Delete Table ' + num + '?
+
+If the table has no order history it will be permanently removed.
+If it has orders, it will be hidden from the system but records are kept.')) return;
     const r = await fetch('/api/tables/' + id, { method: 'DELETE' });
-    if (r.ok) { toast('Table deactivated'); loadTables(); }
-    else toast('Failed', true);
+    if (r.ok) {
+      const d = await r.json();
+      toast(d.note ? 'Table ' + num + ' hidden (has order history)' : 'Table ' + num + ' deleted');
+      loadTables();
+    } else {
+      const e = await r.json().catch(() => ({}));
+      toast(e.error || 'Failed to delete table', true);
+    }
   }
 
   function toggleExportMenu() {
@@ -766,7 +438,10 @@ export function adminPage(): string {
       renderRevenueChart(data.revenueByDay, data.days);
       renderPopularChart(data.popularItems);
       renderStaffPerformance(data.staffPerformance || []);
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+      console.error('Failed to load analytics:', e);
+      toast('Failed to load analytics', true);
+    }
   }
 
   function renderStaffPerformance(rows) {
@@ -777,9 +452,9 @@ export function adminPage(): string {
     }
     el.innerHTML = rows.map(r =>
       '<tr>' +
-        '<td style="font-weight:600">' + esc(r.staff_name || 'Unknown') + '</td>' +
-        '<td>' + (r.orders_prepared || 0) + '</td>' +
-        '<td>' + (r.avg_prep_min ? r.avg_prep_min + ' min' : '—') + '</td>' +
+        '<td class="name-col" style="font-weight:600">' + esc(r.staff_name || 'Unknown') + '</td>' +
+        '<td class="nowrap">' + (r.orders_prepared || 0) + '</td>' +
+        '<td class="nowrap">' + (r.avg_prep_min ? r.avg_prep_min + ' min' : '—') + '</td>' +
       '</tr>'
     ).join('');
   }
@@ -807,14 +482,14 @@ export function adminPage(): string {
       const badge = qty === 0 ? 'badge-red' : qty <= 5 ? 'badge-yellow' : 'badge-green';
       const label = qty === 0 ? 'Out of Stock' : qty <= 5 ? 'Low Stock' : 'In Stock';
       return '<tr>' +
-        '<td style="font-weight:600">' + esc(item.name) + '</td>' +
-        '<td><span style="color:var(--muted);font-size:0.85rem">' + esc(item.category) + '</span></td>' +
-        '<td><strong style="font-size:1.05rem">' + qty + '</strong></td>' +
-        '<td><span class="badge ' + badge + '">' + label + '</span></td>' +
-        '<td><div style="display:flex;gap:6px;align-items:center">' +
-          '<input type="number" id="restock-' + item.id + '" min="0" placeholder="New qty" style="width:90px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem;background:var(--surface2);color:var(--text)">' +
+        '<td class="name-col" style="font-weight:600">' + esc(item.name) + '</td>' +
+        '<td class="nowrap">' + esc(item.category) + '</td>' +
+        '<td class="nowrap"><strong>' + qty + '</strong></td>' +
+        '<td class="nowrap"><span class="badge ' + badge + '">' + label + '</span></td>' +
+        '<td class="td-actions">' +
+          '<input type="number" id="restock-' + item.id + '" min="0" placeholder="New qty" style="width:90px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem;vertical-align:middle">' +
           '<button class="btn btn-secondary btn-sm" onclick="restockItem(' + item.id + ')">Update</button>' +
-        '</div></td>' +
+        '</td>' +
       '</tr>';
     }).join('');
   }
@@ -847,7 +522,7 @@ export function adminPage(): string {
       data: {
         labels,
         datasets: [
-          { type: 'bar', label: 'Revenue (Rs.)', data: revenues, backgroundColor: 'rgba(200,82,26,0.75)', borderColor: '#C8521A', borderWidth: 1, borderRadius: 4, yAxisID: 'y' },
+          { type: 'bar', label: 'Revenue (QAR)', data: revenues, backgroundColor: 'rgba(200,82,26,0.75)', borderColor: '#C8521A', borderWidth: 1, borderRadius: 4, yAxisID: 'y' },
           { type: 'line', label: 'Orders', data: orderCounts, borderColor: '#2563EB', backgroundColor: 'rgba(37,99,235,0.08)', tension: 0.35, pointRadius: 4, yAxisID: 'y1' }
         ]
       },
@@ -856,7 +531,7 @@ export function adminPage(): string {
         interaction: { mode: 'index', intersect: false },
         plugins: { legend: { position: 'top' } },
         scales: {
-          y:  { position: 'left',  title: { display: true, text: 'Revenue (Rs.)' }, beginAtZero: true },
+          y:  { position: 'left',  title: { display: true, text: 'Revenue (QAR)' }, beginAtZero: true },
           y1: { position: 'right', title: { display: true, text: 'Orders' }, beginAtZero: true, grid: { drawOnChartArea: false } }
         }
       }
@@ -908,7 +583,10 @@ export function adminPage(): string {
       } else {
         pager.innerHTML = '<button class="btn btn-secondary btn-sm" onclick="loadAuditLog(false)">Load more (' + auditEntries.length + ' loaded)</button>';
       }
-    } catch(e) { console.error(e); toast('Failed to load audit log', true); }
+    } catch(e) { 
+      console.error('Failed to load audit log:', e); 
+      toast('Failed to load audit log', true); 
+    }
   }
 
   function filterAuditLog() {
@@ -1001,7 +679,3 @@ export function adminPage(): string {
   }
 
   init();
-</script>
-</body>
-</html>`;
-}

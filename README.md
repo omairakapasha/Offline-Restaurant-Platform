@@ -9,6 +9,12 @@ QR-code dine-in ordering with real-time kitchen dispatch. A diner scans the code
 
 Fully self-hosted: one server, your database, no per-order fees. Cash-only, dine-in.
 
+## System Demo
+
+<p align="center">
+  <video src="./assets/Self%20Hosted%20Ordering%20System.mp4" width="100%" controls autoplay loop></video>
+</p>
+
 ## Quickstart
 
 ```bash
@@ -143,3 +149,24 @@ cd packages/ai-chat && uvicorn main:app --port 8001
 - **Authenticated WebSocket.** The kitchen feed authenticates during the HTTP upgrade; unauthenticated upgrades are dropped.
 - **Append-only history.** Menu items are soft-archived, order-line prices are snapshotted at order time, and the audit log never updates or deletes.
 - **DB-backed sessions.** Cookie sessions live in Postgres, so password resets and deactivations revoke access immediately and restarts log nobody out.
+
+## Gallery
+
+<details>
+<summary>Click to expand and view system screenshots</summary>
+
+<br>
+
+<p align="center">
+  <img src="./assets/Screenshot%202026-07-19%20135146.png" width="45%">
+  <img src="./assets/Screenshot%202026-07-19%20135232.png" width="45%">
+  <img src="./assets/Screenshot%202026-07-19%20135246.png" width="45%">
+  <img src="./assets/Screenshot%202026-07-19%20135315.png" width="45%">
+  <img src="./assets/Screenshot%202026-07-19%20135335.png" width="45%">
+  <img src="./assets/Screenshot%202026-07-19%20135404.png" width="45%">
+  <img src="./assets/Screenshot%202026-07-19%20135422.png" width="45%">
+  <img src="./assets/Screenshot%202026-07-19%20135537.png" width="45%">
+  <img src="./assets/Screenshot%202026-07-19%20141125.png" width="90%">
+</p>
+
+</details>

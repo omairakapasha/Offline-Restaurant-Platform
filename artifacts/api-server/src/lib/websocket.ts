@@ -8,7 +8,6 @@ export interface KitchenMessage {
   timestamp: string;
 }
 
-// Extend WebSocket type to track liveness
 interface AliveWebSocket extends WebSocket {
   isAlive: boolean;
 }
@@ -22,7 +21,6 @@ export class KitchenWebSocketManager {
     this.wss = wss;
     this.setupConnections();
     // Ping every 30s; terminate clients that didn't respond to the previous ping.
-    // This prevents dead sockets (WiFi drops, closed tabs) from accumulating.
     this.heartbeatTimer = setInterval(() => this.pingAll(), 30_000);
   }
 
@@ -50,10 +48,9 @@ export class KitchenWebSocketManager {
 
       client.on('message', (data: string) => {
         try {
-          const message = JSON.parse(data);
-          logger.debug('Received message:', message);
-        } catch (error) {
-          logger.error('Invalid message format:', error);
+          JSON.parse(data);
+        } catch {
+          logger.error('Invalid WebSocket message format');
         }
       });
 
@@ -90,6 +87,17 @@ export class KitchenWebSocketManager {
   public getConnectedClients() {
     return this.clients.size;
   }
+}
+
+// Module-level singleton — set once on startup, used everywhere via broadcast().
+let _manager: KitchenWebSocketManager | null = null;
+
+export function setWsManager(m: KitchenWebSocketManager): void {
+  _manager = m;
+}
+
+export function broadcast(msg: KitchenMessage): void {
+  _manager?.broadcast(msg);
 }
 
 export default KitchenWebSocketManager;

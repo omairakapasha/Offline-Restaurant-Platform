@@ -17,9 +17,7 @@ services:
       retries: 10
 
   api:
-    build:
-      context: .
-      dockerfile: artifacts/api-server/Dockerfile
+    image: omairrauf/self-hosted-restaurant-ordering-system-api:latest
     restart: unless-stopped
     ports:
       - "5000:5000"
@@ -31,8 +29,6 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5000}
       BRAND_NAME: ${BRAND_NAME:-The Corner Table}
       BRAND_TAGLINE: ${BRAND_TAGLINE:-Scan · Order · Enjoy}
-      CURRENCY_SYMBOL: ${CURRENCY_SYMBOL:-QAR}
-      CURRENCY_CODE: ${CURRENCY_CODE:-QAR}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
@@ -52,9 +48,7 @@ services:
         condition: service_healthy
 
   ai-chat:
-    build:
-      context: packages/ai-chat
-      dockerfile: Dockerfile
+    image: omairrauf/self-hosted-restaurant-ordering-system-ai-chat:latest
     restart: unless-stopped
     ports:
       - "8001:8001"

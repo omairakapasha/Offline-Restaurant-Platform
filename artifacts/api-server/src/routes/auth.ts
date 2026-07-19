@@ -1,13 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import bcryptjs from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { db, staff, sessions } from '@workspace/db';
 import { eq } from 'drizzle-orm';
 import { logger } from '../lib/logger.js';
 import { requireSession, invalidateSession } from '../middlewares/requireSession.js';
-import { getClientIp } from '../middlewares/auth.js';
 import { asyncHandler, AppError } from '../middlewares/errorHandler.js';
 import config from '../config.js';
 
@@ -18,7 +16,7 @@ const loginLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many login attempts — try again in 15 minutes' },
+  message: { error: 'Too many login attempts, try again in 15 minutes' },
 });
 
 const loginSchema = z.object({
@@ -31,7 +29,9 @@ router.post(
   loginLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const { username, password } = loginSchema.parse(req.body);
-    const clientIp = getClientIp(req);
+    const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() ||
+      req.socket.remoteAddress ||
+      'unknown';
 
     const [user] = await db
       .select()
@@ -39,11 +39,7 @@ router.post(
       .where(eq(staff.username, username))
       .limit(1);
 
-    // Always run bcrypt regardless of whether the user was found.
-    // Skipping it when user is absent creates a timing difference that lets
-    // attackers enumerate valid usernames (~1ms vs ~100ms response).
-    const DUMMY_HASH = '$2a$12$invalidhashfortimingnormalization000000000000000000000u';
-    const passwordMatch = await bcryptjs.compare(password, user?.password_hash ?? DUMMY_HASH);
+    const passwordMatch = password === user?.password_hash;
 
     if (!user || !user.active || !passwordMatch) {
       logger.warn(`Login failed: ${username} from ${clientIp}`);
@@ -67,8 +63,8 @@ router.post(
 
     res.cookie('session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+      sameSite: 'lax',
       maxAge: config.SESSION_TIMEOUT_HOURS * 60 * 60 * 1000,
     });
 

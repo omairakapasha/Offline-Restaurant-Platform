@@ -7,7 +7,7 @@ import { logger } from '../lib/logger';
 import { requireSession } from '../middlewares/requireSession';
 import { requireRole } from '../middlewares/requireRole';
 import { asyncHandler, AppError } from '../middlewares/errorHandler';
-import { broadcast } from '../lib/ws';
+import { broadcast } from '../lib/websocket';
 import { sendOrderReadyNotification } from '../lib/push.js';
 import { writeAuditLog } from '../lib/auditLog.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -127,8 +127,8 @@ async function tableHasOtherActiveOrders(tableId: number, excludeOrderId: string
 const createOrderSchema = z.object({
   tableToken: z.string().min(1).optional(),
   tableNumber: z.number().int().positive().optional(),
-  customerName: z.string().min(1, 'Name required').max(100),
-  customerPhone: z.string().min(1, 'Phone required').max(20),
+  customerName: z.string().min(5, 'Name required').max(20),
+  customerPhone: z.string().min(11, 'Phone required').max(11),
   items: z.array(
     z.object({
       menuItemId: z.number().int().positive(),
@@ -136,7 +136,7 @@ const createOrderSchema = z.object({
       specialInstructions: z.string().max(500).optional(),
     })
   ).min(1, 'At least one item required').max(20, 'Too many items in one order'),
-  specialInstructions: z.string().max(1000).optional(),
+  specialInstructions: z.string().max(100).optional(),
 }).refine(d => d.tableToken || d.tableNumber, { message: 'tableToken or tableNumber is required' });
 
 const updateOrderStatusSchema = z.object({
@@ -548,7 +548,7 @@ router.patch(
         .from(order_items)
         .innerJoin(menu_items, eq(order_items.menu_item_id, menu_items.id))
         .where(eq(order_items.order_id, id));
-      const maxPrepMin = orderMenuItems.reduce((m, i) => Math.max(m, i.prepTime ?? 10), 10);
+      const maxPrepMin = orderMenuItems.reduce((m, i) => Math.max(m, i.prepTime ?? 10), 0) || 10;
       estimatedReadyTime = new Date(Date.now() + maxPrepMin * 60 * 1000);
     }
 

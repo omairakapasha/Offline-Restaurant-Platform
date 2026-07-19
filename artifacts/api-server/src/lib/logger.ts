@@ -1,15 +1,11 @@
 import pino, { type Logger } from 'pino';
+import config from '../config.js';
 
-const level = process.env.LOG_LEVEL || 'info';
-
-// Pretty-print only in development, and only if pino-pretty is actually installed.
-// Production images are built with prod-only deps (pino-pretty is a devDependency),
-// so fall back to structured JSON logs instead of crashing if it is unavailable.
 function createLogger(): Logger {
-  if (process.env.NODE_ENV === 'development') {
+  if (config.NODE_ENV === 'development') {
     try {
       return pino({
-        level,
+        level: config.LOG_LEVEL,
         transport: {
           target: 'pino-pretty',
           options: { colorize: true, translateTime: 'SYS:standard', ignore: 'pid,hostname' },
@@ -19,9 +15,8 @@ function createLogger(): Logger {
       // pino-pretty not available — fall through to JSON logging.
     }
   }
-  return pino({ level });
+  return pino({ level: config.LOG_LEVEL });
 }
 
 export const logger = createLogger();
-
 export default logger;

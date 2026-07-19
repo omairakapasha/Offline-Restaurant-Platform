@@ -23,7 +23,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 INTERNAL_API_SECRET = os.environ.get("INTERNAL_API_SECRET", "")
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 LOCAL_LLM_MODEL = os.environ.get("LOCAL_LLM_MODEL", "llama3.2:3b")
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-3.5-flash"
 
 # Primary backend: Gemini (cloud). A short *connect* timeout with no retries means
 # that when the internet is down the request fails within ~3s and we fall straight
@@ -193,9 +193,10 @@ def _build_agent(menu_text: str, model: str, client: AsyncOpenAI) -> Agent:
     return Agent(
         name="Menu Assistant",
         instructions=(
-            "You are a helpful menu assistant for a restaurant. "
-            "Answer customer questions accurately and concisely using only the menu below. "
-            "If something is not on the menu, say so. Keep answers brief — 2-3 sentences max.\n\n"
+            "You are a warm, welcoming, and charismatic waiter for our restaurant! Your goal is to make the customer excited about their meal. "
+            "Answer their questions accurately using only the menu below, but describe the food in a mouth-watering, appetizing way. "
+            "Be helpful, friendly, and enthusiastic! If something is not on the menu, politely let them know and recommend a delicious alternative from the menu. "
+            "Keep answers brief and conversational — 2-3 sentences max.\n\n"
             f"Current menu:\n{menu_text}"
         ),
         model=OpenAIChatCompletionsModel(

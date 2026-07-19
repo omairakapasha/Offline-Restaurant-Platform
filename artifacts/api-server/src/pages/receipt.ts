@@ -1,4 +1,4 @@
-import { BRAND, fontLinks, tokens, baseStyles, icon } from './theme';
+import { BRAND, fontLinks, tokens, baseStyles, icon, CURRENCY } from './theme';
 
 export function receiptPage(orderId: string): string {
   return /* html */`<!DOCTYPE html>
@@ -80,6 +80,7 @@ export function receiptPage(orderId: string): string {
   </div>
 
   <script>
+    const CURRENCY_SYMBOL = '${CURRENCY.symbol}';
     const ORDER_ID = '${orderId}';
 
     function esc(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -110,7 +111,7 @@ export function receiptPage(orderId: string): string {
           itemRows += '<tr><td>' +
             esc(item.name) + ' <span style="color:var(--ink-soft)">×' + item.quantity + '</span>' +
             (item.specialInstructions ? '<div class="item-note">Note: ' + esc(item.specialInstructions) + '</div>' : '') +
-            '</td><td>Rs.' + parseFloat(item.price).toFixed(0) + '</td><td>Rs.' + lineTotal.toFixed(0) + '</td></tr>';
+            '</td><td>' + CURRENCY_SYMBOL + ' ' + parseFloat(item.price).toFixed(0) + '</td><td>' + CURRENCY_SYMBOL + ' ' + lineTotal.toFixed(0) + '</td></tr>';
         }
 
         const total = parseFloat(order.totalAmount || subtotal);
@@ -128,7 +129,7 @@ export function receiptPage(orderId: string): string {
             '<tbody>' + itemRows + '</tbody>' +
           '</table>' +
           '<div class="totals">' +
-            '<div class="total-row grand"><span>Total</span><span>Rs.' + total.toFixed(0) + '</span></div>' +
+            '<div class="total-row grand"><span>Total</span><span>' + CURRENCY_SYMBOL + ' ' + total.toFixed(0) + '</span></div>' +
           '</div>';
 
         document.getElementById('btnRow').style.display = 'flex';

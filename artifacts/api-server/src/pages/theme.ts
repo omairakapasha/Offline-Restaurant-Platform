@@ -16,6 +16,11 @@ export const BRAND = {
   tagline: config.BRAND_TAGLINE,
 };
 
+export const CURRENCY = {
+  symbol: config.CURRENCY_SYMBOL,
+  code: config.CURRENCY_CODE,
+};
+
 /** One Google Fonts link for every page: Caveat (display) + Nunito (body/UI). */
 export function fontLinks(): string {
   return `<link rel="preconnect" href="https://fonts.googleapis.com">

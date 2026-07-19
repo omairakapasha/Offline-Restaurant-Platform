@@ -1,4 +1,4 @@
-import { BRAND, fontLinks, tokens, baseStyles, icon } from './theme';
+import { BRAND, fontLinks, tokens, baseStyles, icon, CURRENCY } from './theme';
 
 export function customerPage(): string {
   return /* html */`<!DOCTYPE html>
@@ -81,15 +81,8 @@ export function customerPage(): string {
     .cat-title { font-family: var(--font-display); font-size: 2rem; color: var(--ink); margin-bottom: 14px; text-align: center; }
     .cat-title::after { content: ''; display: block; width: 60px; height: 3px; background: var(--brand); border-radius: 3px; margin: 4px auto 0; }
 
-    /* SLIDER — mobile: horizontal paging, desktop: grid */
-    .slider-wrap { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; display: flex; scrollbar-width: none; gap: 12px; }
-    .slider-wrap::-webkit-scrollbar { display: none; }
-    .slide { min-width: 100%; scroll-snap-align: start; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex-shrink: 0; }
-
-    /* DOTS */
-    .dots { display: flex; justify-content: center; gap: 7px; margin-top: 14px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); cursor: pointer; transition: all .2s; border: none; padding: 0; }
-    .dot.active { background: var(--brand); transform: scale(1.3); }
+    /* MENU GRID */
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 
     /* CARD */
     .menu-item {
@@ -120,9 +113,7 @@ export function customerPage(): string {
 
     /* DESKTOP */
     @media (min-width: 700px) {
-      .slider-wrap { overflow: visible; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; scroll-snap-type: none; }
-      .slide { display: contents; min-width: unset; }
-      .dots { display: none; }
+      .menu-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
       .item-image, .item-image-ph { height: 180px; }
       .item-content { padding: 14px 16px; }
       .item-name { font-size: 1.18rem; }
@@ -214,6 +205,54 @@ export function customerPage(): string {
     #chatSend { background: var(--brand); color: #fff; border: 2px solid var(--brand-deep); border-radius: 50%; width: 38px; height: 38px; cursor: pointer; flex-shrink: 0; transition: background .2s; display: flex; align-items: center; justify-content: center; }
     #chatSend svg { width: 17px; height: 17px; }
     #chatSend:hover { background: var(--brand-deep); }
+
+    /* ITEM DETAIL POPUP */
+    #itemOverlay {
+      position: fixed; inset: 0; background: var(--overlay-bg);
+      -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+      z-index: 350; display: none; align-items: flex-end; justify-content: center;
+      padding: 0;
+    }
+    #itemOverlay.show { display: flex; }
+    #itemSheet {
+      background: var(--surface); border-radius: var(--radius) var(--radius) 0 0;
+      width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 -12px 40px rgba(20,14,8,.35);
+      animation: sheetUp .3s cubic-bezier(.34,1.2,.64,1);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @media (min-width: 560px) {
+      #itemOverlay { align-items: center; padding: 20px; }
+      #itemSheet { border-radius: var(--radius); max-height: 88vh; animation: modalIn .28s cubic-bezier(.34,1.4,.64,1); }
+    }
+    .item-sheet-img { width: 100%; height: 220px; object-fit: cover; display: block; border-radius: var(--radius) var(--radius) 0 0; }
+    .item-sheet-img-ph { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; font-size: 4rem; background: var(--surface-2); border-radius: var(--radius) var(--radius) 0 0; }
+    .item-sheet-body { padding: 20px 22px 22px; }
+    .item-sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+    .item-sheet-name { font-family: var(--font-display); font-size: 2rem; color: var(--ink); line-height: 1.1; }
+    .item-sheet-price { font-family: var(--font-display); font-size: 2rem; color: var(--brand-deep); white-space: nowrap; }
+    .item-sheet-desc { color: var(--ink-soft); font-size: 1rem; line-height: 1.55; margin: 12px 0 16px; }
+    .item-sheet-allergens { font-size: .82rem; color: var(--ink-soft); margin-top: 8px; }
+    .item-sheet-footer {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding-top: 18px; border-top: 2px dashed var(--line); margin-top: 16px;
+    }
+    .sheet-qty-ctrl { display: flex; align-items: center; gap: 12px; }
+    .sheet-qty-btn {
+      background: var(--brand); color: #fff; border: 2px solid var(--brand-deep); border-radius: 50%;
+      width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform .15s, background .15s; flex-shrink: 0; font-size: 0;
+    }
+    .sheet-qty-btn:hover { background: var(--brand-deep); transform: scale(1.1); }
+    .sheet-qty-btn:active { transform: scale(.9); }
+    .sheet-qty-btn svg { width: 20px; height: 20px; }
+    .sheet-qty-num { font-weight: 800; font-size: 1.5rem; min-width: 30px; text-align: center; }
+    .sheet-qty-num.bump { animation: bump .35s; }
+    .item-clickable { cursor: pointer; }
+    .item-clickable:hover .item-image,
+    .item-clickable:hover .item-image-ph { opacity: .88; }
+    .item-clickable:hover .item-name { color: var(--brand); }
   </style>
 </head>
 <body>
@@ -249,7 +288,7 @@ export function customerPage(): string {
       <div class="cart-info">
         ${icon('cart')}
         <span class="cart-count-chip" id="cartCount">0</span>
-        <span class="cart-total" id="cartTotal">Rs. 0</span>
+        <span class="cart-total" id="cartTotal">${CURRENCY.symbol} 0</span>
       </div>
       <button class="btn btn-success" onclick="showModal()">Review Order ${icon('back')}</button>
     </div>
@@ -265,6 +304,13 @@ export function customerPage(): string {
         <button class="btn btn-icon btn-ghost btn-sm" onclick="hideModal()">${icon('close')}</button>
       </div>
       <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- ITEM DETAIL SHEET -->
+  <div id="itemOverlay" onclick="hideItemSheet(event)">
+    <div id="itemSheet">
+      <div id="itemSheetInner"></div>
     </div>
   </div>
 
@@ -302,6 +348,7 @@ export function customerPage(): string {
   </div>
 
   <script>
+    const CURRENCY_SYMBOL = '${CURRENCY.symbol}';
     const ICONS = {
       plus: \`${icon('plus')}\`,
       minus: \`${icon('minus')}\`,
@@ -310,6 +357,7 @@ export function customerPage(): string {
       star: \`${icon('star')}\`,
       leaf: \`${icon('leaf')}\`,
       flame: \`${icon('flame')}\`,
+      close: \`${icon('close')}\`,
     };
 
     function esc(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -322,7 +370,7 @@ export function customerPage(): string {
     let activeCategory = 'all';
     const urlParams = new URLSearchParams(location.search);
     const urlToken = urlParams.get('t');
-    const chatSessionId = crypto.randomUUID();
+    const chatSessionId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
     function saveCart() { try { localStorage.setItem('rms_cart', JSON.stringify(cart)); } catch {} }
     function loadCart() {
@@ -341,12 +389,13 @@ export function customerPage(): string {
       loadCart();
       renderSkeleton();
       try {
-        const res = await fetch('/api/menu');
+        const res = await fetch('/api/menu?_t=' + Date.now());
         if (!res.ok) throw new Error('status ' + res.status);
         const data = await res.json();
         if (!Array.isArray(data)) throw new Error('bad payload');
         menuData = data;
-      } catch {
+      } catch (err) {
+        alert("Fetch error: " + err.message);
         showMenuError();
         return;
       }
@@ -369,7 +418,7 @@ export function customerPage(): string {
 
     async function refreshMenu() {
       try {
-        const res = await fetch('/api/menu');
+        const res = await fetch('/api/menu?_t=' + Date.now());
         if (!res.ok) return;
         const fresh = await res.json();
         const freshIds = new Set(fresh.map(i => i.id));
@@ -461,17 +510,21 @@ export function customerPage(): string {
         item.spice_level > 0 ? \`<span class="badge badge-red">\${ICONS.flame} \${spiceLabels[item.spice_level]}</span>\` : '',
       ].filter(Boolean).join('');
       return \`<div class="menu-item">
-        \${img}
-        <div class="item-content">
-          <div class="item-name">\${esc(item.name)}</div>
-          \${badges ? \`<div class="item-badges">\${badges}</div>\` : ''}
+        <div class="item-clickable" onclick="openItemSheet(\${item.id})" role="button" tabindex="0" aria-label="View details for \${esc(item.name)}" onkeydown="if(event.key==='Enter'||event.key===' ')openItemSheet(\${item.id})">
+          \${img}
+          <div class="item-content" style="padding-bottom:0">
+            <div class="item-name">\${esc(item.name)}</div>
+            \${badges ? \`<div class="item-badges">\${badges}</div>\` : ''}
+          </div>
+        </div>
+        <div class="item-content" style="padding-top:8px">
           <div class="item-footer">
             <div class="qty-ctrl">
               <button class="qty-btn" aria-label="Remove one" onclick="updateCart(\${item.id},-1)">\${ICONS.minus}</button>
               <span class="qty-display" id="qty-\${item.id}">\${qty}</span>
               <button class="qty-btn" aria-label="Add one" onclick="updateCart(\${item.id},1)">\${ICONS.plus}</button>
             </div>
-            <span class="item-price">Rs.\${parseFloat(item.price).toFixed(0)}</span>
+            <span class="item-price">\${CURRENCY_SYMBOL} \${parseFloat(item.price).toFixed(0)}</span>
           </div>
         </div>
       </div>\`;
@@ -484,48 +537,91 @@ export function customerPage(): string {
         return;
       }
       const byCategory = {};
-      items.forEach(i => { (byCategory[i.category] ??= []).push(i); });
+      items.forEach(i => { (byCategory[i.category] = byCategory[i.category] || []).push(i); });
       wrap.innerHTML = Object.entries(byCategory).map(([cat, its]) => {
-        const pages = [];
-        for (let i = 0; i < its.length; i += 4) pages.push(its.slice(i, i + 4));
-        const catId = 'sw-' + cat.replace(/\\W/g, '_');
-        const dots = pages.length > 1
-          ? \`<div class="dots">\${pages.map((_,i) => \`<button class="dot \${i===0?'active':''}" onclick="goSlide('\${catId}',\${i})"></button>\`).join('')}</div>\`
-          : '';
         return \`<div class="cat-section">
           <div class="cat-title display">\${esc(cat)}</div>
-          <div class="slider-wrap" id="\${catId}" onscroll="syncDots('\${catId}')">
-            \${pages.map(page => \`<div class="slide">\${page.map(cardHtml).join('')}</div>\`).join('')}
+          <div class="menu-grid">
+            \${its.map(cardHtml).join('')}
           </div>
-          \${dots}
         </div>\`;
       }).join('');
-    }
-
-    function goSlide(id, idx) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.scrollTo({ left: el.offsetWidth * idx, behavior: 'smooth' });
-    }
-
-    function syncDots(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const idx = Math.round(el.scrollLeft / el.offsetWidth);
-      el.parentElement.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
     }
 
     function updateCart(id, delta) {
       const next = Math.max(0, (cart[id] || 0) + delta);
       if (next === 0) delete cart[id]; else cart[id] = next;
+      // Update card qty display
       const el = document.getElementById('qty-' + id);
       if (el) {
         el.textContent = String(next);
         if (delta > 0) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
       }
+      // Update sheet qty display if the sheet is open for this item
+      const sheetEl = document.getElementById('sheet-qty-' + id);
+      if (sheetEl) {
+        sheetEl.textContent = String(next);
+        if (delta > 0) { sheetEl.classList.remove('bump'); void sheetEl.offsetWidth; sheetEl.classList.add('bump'); }
+      }
       refreshCartBar();
       saveCart();
     }
+
+    function openItemSheet(id) {
+      const item = menuData.find(m => m.id == id);
+      if (!item) return;
+      const qty = cart[item.id] || 0;
+      const spiceLabels = ['', 'Mild', 'Medium', 'Spicy'];
+      const img = item.image_url
+        ? \`<img src="\${esc(item.image_url)}" alt="\${esc(item.name)}" class="item-sheet-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'item-sheet-img-ph',textContent:'🍽️'}))">\`
+        : '<div class="item-sheet-img-ph">🍽️</div>';
+      const badges = [
+        item.popular     ? \`<span class="badge badge-brand">\${ICONS.star} Popular</span>\` : '',
+        item.is_vegetarian ? \`<span class="badge badge-green">\${ICONS.leaf} Vegetarian</span>\` : '',
+        item.spice_level > 0 ? \`<span class="badge badge-red">\${ICONS.flame} \${spiceLabels[item.spice_level]}</span>\` : '',
+        item.prep_time   ? \`<span class="badge badge-muted">⏱ \${item.prep_time} min</span>\` : '',
+      ].filter(Boolean).join(' ');
+      const allergens = item.allergens && item.allergens.length
+        ? \`<p class="item-sheet-allergens">⚠️ Contains: \${item.allergens.map(a => esc(a)).join(', ')}</p>\` : '';
+      document.getElementById('itemSheetInner').innerHTML = \`
+        \${img}
+        <div class="item-sheet-body">
+          <div class="item-sheet-head">
+            <div class="item-sheet-name">\${esc(item.name)}</div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+              <button class="btn btn-icon btn-ghost btn-sm" onclick="hideItemSheet()" aria-label="Close" style="flex-shrink:0">\${ICONS.close}</button>
+            </div>
+          </div>
+          \${badges ? \`<div class="item-badges" style="margin-bottom:4px">\${badges}</div>\` : ''}
+          \${item.description ? \`<p class="item-sheet-desc">\${esc(item.description)}</p>\` : '<p class="item-sheet-desc" style="font-style:italic">No description available.</p>'}
+          \${allergens}
+          <div class="item-sheet-footer">
+            <div class="sheet-qty-ctrl">
+              <button class="sheet-qty-btn" aria-label="Remove one" onclick="updateCart(\${item.id},-1)">\${ICONS.minus}</button>
+              <span class="sheet-qty-num" id="sheet-qty-\${item.id}">\${qty}</span>
+              <button class="sheet-qty-btn" aria-label="Add one" onclick="updateCart(\${item.id},1)">\${ICONS.plus}</button>
+            </div>
+            <span class="item-sheet-price">\${CURRENCY_SYMBOL} \${parseFloat(item.price).toFixed(0)}</span>
+          </div>
+        </div>\`;
+      document.getElementById('itemOverlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function hideItemSheet(event) {
+      // Close only when clicking the backdrop (not the sheet itself)
+      if (event && event.target !== document.getElementById('itemOverlay')) return;
+      document.getElementById('itemOverlay').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    // Close on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        hideItemSheet();
+        hideModal();
+      }
+    });
 
     function refreshCartBar() {
       const entries = Object.entries(cart);
@@ -535,7 +631,7 @@ export function customerPage(): string {
         return s + (mi ? parseFloat(mi.price)*q : 0);
       }, 0);
       document.getElementById('cartCount').textContent = totalQty;
-      document.getElementById('cartTotal').textContent = 'Rs. ' + totalAmt.toFixed(0);
+      document.getElementById('cartTotal').textContent = CURRENCY_SYMBOL + ' ' + totalAmt.toFixed(0);
       document.getElementById('cartBar').classList.toggle('visible', totalQty > 0);
     }
 
@@ -568,7 +664,7 @@ export function customerPage(): string {
           const date = new Date(o.createdAt).toLocaleDateString('en-PK', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
           const badgeCls = {received:'badge-amber',preparing:'badge-blue',ready:'badge-green',served:'badge-muted',cancelled:'badge-red'}[o.status] || 'badge-muted';
           return '<div class="card" style="padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">' +
-            '<div><div style="font-weight:800;font-size:1.05rem">Table ' + (o.tableNumber||'?') + ' · Rs.' + parseFloat(o.totalAmount||0).toFixed(0) + '</div>' +
+            '<div><div style="font-weight:800;font-size:1.05rem">Table ' + (o.tableNumber||'?') + ' · ' + CURRENCY_SYMBOL + ' ' + parseFloat(o.totalAmount||0).toFixed(0) + '</div>' +
             '<div style="font-size:.82rem;color:var(--ink-soft)">' + date + '</div></div>' +
             '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">' +
               '<span class="badge ' + badgeCls + '">' + o.status + '</span>' +
@@ -588,7 +684,7 @@ export function customerPage(): string {
         const sub = parseFloat(mi.price)*qty;
         total += sub;
         return \`<div class="summary-item">
-          <div><div class="mi-name">\${esc(mi.name)}</div><div class="mi-sub">Rs.\${parseFloat(mi.price).toFixed(0)} × \${qty} = Rs.\${sub.toFixed(0)}</div></div>
+          <div><div class="mi-name">\${esc(mi.name)}</div><div class="mi-sub">\${CURRENCY_SYMBOL} \${parseFloat(mi.price).toFixed(0)} × \${qty} = \${CURRENCY_SYMBOL} \${sub.toFixed(0)}</div></div>
           <div class="mi-ctrl">
             <button class="adj-btn" onclick="modalAdj(\${id},-1)">\${ICONS.minus}</button>
             <span style="font-weight:800;min-width:20px;text-align:center">\${qty}</span>
@@ -596,18 +692,20 @@ export function customerPage(): string {
           </div>
         </div>\`;
       });
-      custName = document.getElementById('cust-name')?.value ?? custName;
-      custPhone = document.getElementById('cust-phone')?.value ?? custPhone;
+      const nameVal = document.getElementById('cust-name') ? document.getElementById('cust-name').value : '';
+      const phoneVal = document.getElementById('cust-phone') ? document.getElementById('cust-phone').value : '';
+      custName = nameVal || custName;
+      custPhone = phoneVal || custPhone;
       document.getElementById('modalBody').innerHTML = rows.join('') +
-        \`<div class="summary-total"><span class="st-label">Total</span><span class="st-amt display">Rs. \${total.toFixed(0)}</span></div>
+        \`<div class="summary-total"><span class="st-label">Total</span><span class="st-amt display">\${CURRENCY_SYMBOL} \${total.toFixed(0)}</span></div>
         <div style="margin-top:18px;padding-top:14px;border-top:2px dashed var(--line)">
           <div class="field">
             <label>Your Name *</label>
-            <input type="text" id="cust-name" class="input" value="\${esc(custName)}" placeholder="e.g. Ahmed Ali" oninput="custName=this.value">
+            <input type="text" id="cust-name" class="input" value="\${esc(custName)}" placeholder="Name" oninput="custName=this.value">
           </div>
           <div class="field" style="margin-bottom:0">
             <label>Phone Number *</label>
-            <input type="tel" id="cust-phone" class="input" value="\${esc(custPhone)}" placeholder="e.g. 0300-1234567" oninput="custPhone=this.value">
+            <input type="tel" id="cust-phone" class="input" value="\${esc(custPhone)}" placeholder="Phone Number" oninput="custPhone=this.value">
           </div>
         </div>
         <div class="modal-actions">
@@ -625,10 +723,10 @@ export function customerPage(): string {
     async function placeOrder() {
       const nameEl = document.getElementById('cust-name');
       const phoneEl = document.getElementById('cust-phone');
-      const customerName = (nameEl?.value || '').trim();
-      const customerPhone = (phoneEl?.value || '').trim();
-      if (!customerName) { nameEl?.focus(); toast('Please enter your name', 'error'); return; }
-      if (!customerPhone) { phoneEl?.focus(); toast('Please enter your phone number', 'error'); return; }
+      const customerName = (nameEl && nameEl.value ? nameEl.value : '').trim();
+      const customerPhone = (phoneEl && phoneEl.value ? phoneEl.value : '').trim();
+      if (!customerName) { if (nameEl) nameEl.focus(); toast('Please enter your name', 'error'); return; }
+      if (!customerPhone) { if (phoneEl) phoneEl.focus(); toast('Please enter your phone number', 'error'); return; }
       const tableInput = document.getElementById('tableInput').value;
       if (!tableInput && !urlToken) { toast('Please enter your table number', 'error'); return; }
       const items = Object.entries(cart).map(([id,qty])=>({ menuItemId:parseInt(id), quantity:qty }));
@@ -659,7 +757,7 @@ export function customerPage(): string {
           <p style="color:var(--ink-soft);margin-bottom:16px;font-size:1.05rem">Ready in ~<strong>\${order.estimatedMinutes} min</strong></p>
           <div class="order-receipt-box">
             <p style="font-weight:800;font-size:1.2rem;margin-bottom:4px">Order #\${order.id.slice(-8).toUpperCase()}</p>
-            <p style="color:var(--ink-soft)">Total: Rs. \${parseFloat(order.totalAmount).toFixed(0)}</p>
+            <p style="color:var(--ink-soft)">Total: \${CURRENCY_SYMBOL} \${parseFloat(order.totalAmount).toFixed(0)}</p>
           </div>
           <a href="\${order.trackingUrl}" class="btn btn-primary btn-block btn-lg" style="margin-bottom:10px">\${ICONS.pin} Track Your Order</a>
           <button class="btn btn-ghost btn-block" onclick="hideModal()">Continue Ordering</button>
@@ -678,7 +776,7 @@ export function customerPage(): string {
         document.getElementById('chatPanel').style.display = chatOpen ? 'flex' : 'none';
         if (chatOpen && !greeted) {
           greeted = true;
-          appendChatMsg('assistant', "Hi! Ask me anything about our menu — what's vegetarian, what's spicy, what I'd recommend, etc.");
+          appendChatMsg('assistant', "Hi! Ask me anything about our menu! For example, what's vegetarian, what's spicy, or what I'd recommend.");
         }
       }
       function appendChatMsg(role, text) {

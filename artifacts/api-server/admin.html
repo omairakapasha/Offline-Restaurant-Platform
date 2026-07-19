@@ -1,13 +1,12 @@
-import { BRAND, CURRENCY, fontLinks } from './theme';
-
-export function adminPage(): string {
-  return /* html */`<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — ${BRAND.name}</title>
-  ${fontLinks()}
+  <title>Admin — Self Ordering Restaurant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --font-display:'Caveat','Comic Sans MS',cursive;
@@ -51,7 +50,6 @@ export function adminPage(): string {
     .topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; position:sticky; top:0; z-index:100; }
     .topbar h1 { font-family:var(--font-display); font-size:1.7rem; color:var(--brand); }
     .topbar-right { display:flex; align-items:center; gap:12px; }
-    .staff-badge { font-size:0.82rem; color:var(--muted); }
     .tabs { background:var(--surface); border-bottom:1px solid var(--border); padding:0 24px; display:flex; gap:0; }
     .tab { padding:14px 20px; font-size:0.88rem; font-weight:600; cursor:pointer; border-bottom:3px solid transparent; color:var(--muted); transition:all .18s; white-space:nowrap; }
     .tab:hover { color:var(--text); }
@@ -69,9 +67,14 @@ export function adminPage(): string {
     .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); margin-bottom:20px; }
     .card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
     .card-title { font-weight:700; font-size:1rem; }
-    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-    th { text-align:left; padding:10px 12px; background:var(--bg); border-bottom:1px solid var(--border); font-weight:600; font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
-    td { padding:10px 12px; border-bottom:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; table-layout:fixed; }
+    th { text-align:left; padding:10px 12px; background:var(--bg); border-bottom:1px solid var(--border); font-weight:600; font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+    td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    td.nowrap { white-space:nowrap; }
+    td.name-col { min-width:140px; word-break:break-word; }
+    td.td-actions { white-space:nowrap; }
+    td.td-actions .btn { margin-right:4px; }
+    td.td-actions .btn:last-child { margin-right:0; }
     tr:last-child td { border-bottom:none; }
     tr:hover td { background:var(--surface-2); }
 
@@ -182,7 +185,7 @@ export function adminPage(): string {
       <div class="card-head"><span class="card-title">Add Menu Item</span></div>
       <div class="form-grid">
         <div class="field"><label>Name *</label><input type="text" id="mn-name"></div>
-        <div class="field"><label>Price (${CURRENCY.symbol}) *</label><input type="number" id="mn-price" min="0" step="1"></div>
+        <div class="field"><label>Price (QAR) *</label><input type="number" id="mn-price" min="0" step="1"></div>
         <div class="field"><label>Category *</label><input type="text" id="mn-cat" list="catlist"><datalist id="catlist"><option>Main Course<option>Appetizer<option>Bread<option>Dessert<option>Beverage</datalist></div>
         <div class="field"><label>Prep Time (min)</label><input type="number" id="mn-prep" value="10" min="1"></div>
         <div class="field"><label>Description</label><input type="text" id="mn-desc"></div>
@@ -339,6 +342,7 @@ export function adminPage(): string {
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+  const CURRENCY_SYMBOL = 'QAR';
   let currentUser = null;
   let editCtx = null;
   let editTableId = null;
@@ -408,22 +412,26 @@ export function adminPage(): string {
       if (sRes.ok) {
         const s = await sRes.json();
         document.getElementById('st-orders').textContent = s.totalOrders;
-        document.getElementById('st-revenue').textContent = '${CURRENCY.symbol} ' + parseFloat(s.totalRevenue||0).toFixed(0);
+        document.getElementById('st-revenue').textContent = CURRENCY_SYMBOL + ' ' + parseFloat(s.totalRevenue||0).toFixed(0);
         document.getElementById('st-active').textContent = s.activeOrders;
         document.getElementById('st-prep').textContent = (s.avgPrepTimeMinutes||0) + ' min';
       }
       if (oRes.ok) {
         const orders = await oRes.json();
         document.getElementById('ordersBody').innerHTML = orders.map(o =>
-          '<tr><td style="font-family:monospace;font-size:.75rem">' + o.id.slice(-8).toUpperCase() + '</td>' +
-          '<td>Table ' + (o.tableNumber || '?') + '</td>' +
-          '<td><span class="badge badge-' + o.status + '">' + o.status + '</span></td>' +
-          '<td>' + (o.itemCount||0) + ' items</td>' +
-          '<td>${CURRENCY.symbol} ' + parseFloat(o.totalAmount||0).toFixed(0) + '</td>' +
-          '<td>' + new Date(o.createdAt).toLocaleTimeString() + '</td></tr>'
+          '<tr>' +
+          '<td class="nowrap" style="font-family:monospace;font-size:.75rem">' + o.id.slice(-8).toUpperCase() + '</td>' +
+          '<td class="nowrap">Table ' + (o.tableNumber || '?') + '</td>' +
+          '<td class="nowrap"><span class="badge badge-' + o.status + '">' + o.status + '</span></td>' +
+          '<td class="nowrap">' + (o.itemCount||0) + ' items</td>' +
+          '<td class="nowrap">' + CURRENCY_SYMBOL + ' ' + parseFloat(o.totalAmount||0).toFixed(0) + '</td>' +
+          '<td class="nowrap">' + new Date(o.createdAt).toLocaleTimeString() + '</td></tr>'
         ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">No orders</td></tr>';
       }
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+      console.error('Failed to load orders:', e);
+      toast('Failed to load orders', true);
+    }
   }
 
   // --- MENU ---
@@ -433,14 +441,14 @@ export function adminPage(): string {
     const items = await r.json();
     document.getElementById('menuBody').innerHTML = items.map(i =>
       '<tr>' +
-      '<td>' + esc(i.name) + '</td>' +
-      '<td>' + esc(i.category) + '</td>' +
-      '<td>${CURRENCY.symbol} ' + parseFloat(i.price).toFixed(0) + '</td>' +
-      '<td>' +
+      '<td class="name-col">' + esc(i.name) + '</td>' +
+      '<td class="nowrap">' + esc(i.category) + '</td>' +
+      '<td class="nowrap">' + CURRENCY_SYMBOL + ' ' + parseFloat(i.price).toFixed(0) + '</td>' +
+      '<td class="nowrap">' +
         (i.archived ? '<span class="badge badge-red">Archived</span>' :
           (i.available ? '<span class="badge badge-green">Available</span>' : '<span class="badge" style="background:#F3F4F6;color:var(--muted)">Unavailable</span>')) +
       '</td>' +
-      '<td style="display:flex;gap:6px;flex-wrap:wrap">' +
+      '<td class="td-actions">' +
         '<button class="btn btn-secondary btn-sm" onclick="editMenuItem(' + i.id + ')">Edit</button>' +
         '<button class="btn btn-secondary btn-sm" onclick="toggleArchive(' + i.id + ',' + i.archived + ')">' + (i.archived ? 'Unarchive' : 'Archive') + '</button>' +
       '</td></tr>'
@@ -550,12 +558,12 @@ export function adminPage(): string {
     const members = await r.json();
     document.getElementById('staffBody').innerHTML = members.map(m =>
       '<tr>' +
-      '<td>' + esc(m.username) + '</td>' +
-      '<td>' + esc(m.fullName) + '</td>' +
-      '<td><span class="badge badge-' + m.role + '">' + m.role + '</span></td>' +
-      '<td><span class="badge ' + (m.active?'badge-green':'badge-red') + '">' + (m.active?'Active':'Inactive') + '</span></td>' +
-      '<td>' + (m.lastLogin ? new Date(m.lastLogin).toLocaleDateString() : 'Never') + '</td>' +
-      '<td style="display:flex;gap:6px;flex-wrap:wrap">' +
+      '<td class="nowrap">' + esc(m.username) + '</td>' +
+      '<td class="name-col">' + esc(m.fullName) + '</td>' +
+      '<td class="nowrap"><span class="badge badge-' + m.role + '">' + m.role + '</span></td>' +
+      '<td class="nowrap"><span class="badge ' + (m.active?'badge-green':'badge-red') + '">' + (m.active?'Active':'Inactive') + '</span></td>' +
+      '<td class="nowrap">' + (m.lastLogin ? new Date(m.lastLogin).toLocaleDateString() : 'Never') + '</td>' +
+      '<td class="td-actions">' +
         '<button class="btn btn-secondary btn-sm" onclick="editStaff(' + m.id + ')">Edit</button>' +
         '<button class="btn btn-secondary btn-sm" onclick="openPasswordModal(' + m.id + ",'" + esc(m.username) + "')" + '">Password</button>' +
         (m.username !== currentUser?.username && m.active ? '<button class="btn btn-danger btn-sm" onclick="deactivateStaff(' + m.id + ",'" + esc(m.username) + "')" + '">Deactivate</button>' : '') +
@@ -650,15 +658,15 @@ export function adminPage(): string {
     const tbls = await r.json();
     document.getElementById('tablesBody').innerHTML = tbls.map(t =>
       '<tr>' +
-      '<td style="font-weight:700">Table ' + t.table_number + '</td>' +
-      '<td>' + t.capacity + ' seats</td>' +
-      '<td><span class="badge badge-green">' + (t.status||'available') + '</span></td>' +
+      '<td class="nowrap" style="font-weight:700">Table ' + t.table_number + '</td>' +
+      '<td class="nowrap">' + t.capacity + ' seats</td>' +
+      '<td class="nowrap"><span class="badge badge-green">' + (t.status||'available') + '</span></td>' +
       '<td><img src="/api/tables/' + t.id + '/qr" alt="QR Table ' + t.table_number + '" style="width:80px;height:80px;border-radius:6px;display:block"></td>' +
-      '<td style="display:flex;gap:6px;flex-wrap:wrap">' +
+      '<td class="td-actions">' +
         '<a class="btn btn-secondary btn-sm" href="/api/tables/' + t.id + '/qr" download="table-' + t.table_number + '-qr.png">Download</a>' +
         '<button class="btn btn-secondary btn-sm" onclick="printQR(' + t.id + ',' + t.table_number + ')">Print</button>' +
         '<button class="btn btn-secondary btn-sm" onclick="editTable(' + t.id + ')">Edit</button>' +
-        '<button class="btn btn-danger btn-sm" onclick="deactivateTable(' + t.id + ',' + t.table_number + ')">Deactivate</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteTable(' + t.id + ',' + t.table_number + ')">Delete</button>' +
       '</td>' +
       '</tr>'
     ).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">No tables</td></tr>';
@@ -687,11 +695,20 @@ export function adminPage(): string {
     openModal();
   }
 
-  async function deactivateTable(id, num) {
-    if (!confirm('Deactivate Table ' + num + '? Its QR code will stop accepting orders.')) return;
+  async function deleteTable(id, num) {
+    if (!confirm('Delete Table ' + num + '?
+
+If the table has no order history it will be permanently removed.
+If it has orders, it will be hidden from the system but records are kept.')) return;
     const r = await fetch('/api/tables/' + id, { method: 'DELETE' });
-    if (r.ok) { toast('Table deactivated'); loadTables(); }
-    else toast('Failed', true);
+    if (r.ok) {
+      const d = await r.json();
+      toast(d.note ? 'Table ' + num + ' hidden (has order history)' : 'Table ' + num + ' deleted');
+      loadTables();
+    } else {
+      const e = await r.json().catch(() => ({}));
+      toast(e.error || 'Failed to delete table', true);
+    }
   }
 
   function toggleExportMenu() {
@@ -766,7 +783,10 @@ export function adminPage(): string {
       renderRevenueChart(data.revenueByDay, data.days);
       renderPopularChart(data.popularItems);
       renderStaffPerformance(data.staffPerformance || []);
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+      console.error('Failed to load analytics:', e);
+      toast('Failed to load analytics', true);
+    }
   }
 
   function renderStaffPerformance(rows) {
@@ -777,9 +797,9 @@ export function adminPage(): string {
     }
     el.innerHTML = rows.map(r =>
       '<tr>' +
-        '<td style="font-weight:600">' + esc(r.staff_name || 'Unknown') + '</td>' +
-        '<td>' + (r.orders_prepared || 0) + '</td>' +
-        '<td>' + (r.avg_prep_min ? r.avg_prep_min + ' min' : '—') + '</td>' +
+        '<td class="name-col" style="font-weight:600">' + esc(r.staff_name || 'Unknown') + '</td>' +
+        '<td class="nowrap">' + (r.orders_prepared || 0) + '</td>' +
+        '<td class="nowrap">' + (r.avg_prep_min ? r.avg_prep_min + ' min' : '—') + '</td>' +
       '</tr>'
     ).join('');
   }
@@ -807,14 +827,14 @@ export function adminPage(): string {
       const badge = qty === 0 ? 'badge-red' : qty <= 5 ? 'badge-yellow' : 'badge-green';
       const label = qty === 0 ? 'Out of Stock' : qty <= 5 ? 'Low Stock' : 'In Stock';
       return '<tr>' +
-        '<td style="font-weight:600">' + esc(item.name) + '</td>' +
-        '<td><span style="color:var(--muted);font-size:0.85rem">' + esc(item.category) + '</span></td>' +
-        '<td><strong style="font-size:1.05rem">' + qty + '</strong></td>' +
-        '<td><span class="badge ' + badge + '">' + label + '</span></td>' +
-        '<td><div style="display:flex;gap:6px;align-items:center">' +
-          '<input type="number" id="restock-' + item.id + '" min="0" placeholder="New qty" style="width:90px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem;background:var(--surface2);color:var(--text)">' +
+        '<td class="name-col" style="font-weight:600">' + esc(item.name) + '</td>' +
+        '<td class="nowrap">' + esc(item.category) + '</td>' +
+        '<td class="nowrap"><strong>' + qty + '</strong></td>' +
+        '<td class="nowrap"><span class="badge ' + badge + '">' + label + '</span></td>' +
+        '<td class="td-actions">' +
+          '<input type="number" id="restock-' + item.id + '" min="0" placeholder="New qty" style="width:90px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem;vertical-align:middle">' +
           '<button class="btn btn-secondary btn-sm" onclick="restockItem(' + item.id + ')">Update</button>' +
-        '</div></td>' +
+        '</td>' +
       '</tr>';
     }).join('');
   }
@@ -847,7 +867,7 @@ export function adminPage(): string {
       data: {
         labels,
         datasets: [
-          { type: 'bar', label: 'Revenue (Rs.)', data: revenues, backgroundColor: 'rgba(200,82,26,0.75)', borderColor: '#C8521A', borderWidth: 1, borderRadius: 4, yAxisID: 'y' },
+          { type: 'bar', label: 'Revenue (QAR)', data: revenues, backgroundColor: 'rgba(200,82,26,0.75)', borderColor: '#C8521A', borderWidth: 1, borderRadius: 4, yAxisID: 'y' },
           { type: 'line', label: 'Orders', data: orderCounts, borderColor: '#2563EB', backgroundColor: 'rgba(37,99,235,0.08)', tension: 0.35, pointRadius: 4, yAxisID: 'y1' }
         ]
       },
@@ -856,7 +876,7 @@ export function adminPage(): string {
         interaction: { mode: 'index', intersect: false },
         plugins: { legend: { position: 'top' } },
         scales: {
-          y:  { position: 'left',  title: { display: true, text: 'Revenue (Rs.)' }, beginAtZero: true },
+          y:  { position: 'left',  title: { display: true, text: 'Revenue (QAR)' }, beginAtZero: true },
           y1: { position: 'right', title: { display: true, text: 'Orders' }, beginAtZero: true, grid: { drawOnChartArea: false } }
         }
       }
@@ -908,7 +928,10 @@ export function adminPage(): string {
       } else {
         pager.innerHTML = '<button class="btn btn-secondary btn-sm" onclick="loadAuditLog(false)">Load more (' + auditEntries.length + ' loaded)</button>';
       }
-    } catch(e) { console.error(e); toast('Failed to load audit log', true); }
+    } catch(e) { 
+      console.error('Failed to load audit log:', e); 
+      toast('Failed to load audit log', true); 
+    }
   }
 
   function filterAuditLog() {
@@ -1003,5 +1026,4 @@ export function adminPage(): string {
   init();
 </script>
 </body>
-</html>`;
-}
+</html>
