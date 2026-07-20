@@ -5,7 +5,7 @@
 [![PostgreSQL](https://img.shields.io/badge/postgres-15-4169E1.svg)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg)](https://www.docker.com/)
 
-QR-code dine-in ordering with real-time kitchen dispatch. A diner scans the code on their table, browses the menu with full item details, adds items to cart, and places an order — no app install, no account. The kitchen sees it appear over WebSocket a second later. Staff manage menu, tables, orders, inventory, and people from a single admin dashboard.
+QR-code dine-in ordering with real-time kitchen dispatch. A diner scans the code on their table, browses the menu with full item details, adds items to cart, and places an order, no app install, no account. The kitchen sees it appear over WebSocket a second later. Staff manage menu, tables, orders, inventory, and people from a single admin dashboard.
 
 Fully self-hosted: one server, your database, no per-order fees. Cash-only, dine-in.
 
@@ -144,7 +144,7 @@ cd packages/ai-chat && uvicorn main:app --port 8001
 ## Design notes
 
 - **No oversell.** Finite stock decrements inside the order transaction under a `WHERE stock_quantity >= requested` guard, so concurrent orders for the last item can't both succeed.
-- **Per-entity rate limits.** Limiters key on the table's QR token, order ID, or chat session — not IP, since every diner shares one WiFi egress.
+- **Per-entity rate limits.** Limiters key on the table's QR token, order ID, or chat session not IP, since every diner shares one WiFi egress.
 - **Smart table delete.** Tables with no orders are hard-deleted from the database. Tables with order history are soft-deactivated to preserve financial records.
 - **Authenticated WebSocket.** The kitchen feed authenticates during the HTTP upgrade; unauthenticated upgrades are dropped.
 - **Append-only history.** Menu items are soft-archived, order-line prices are snapshotted at order time, and the audit log never updates or deletes.
