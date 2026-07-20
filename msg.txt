@@ -1,0 +1,20 @@
+Initial commit: self-hosted Restaurant Management System
+
+Express 5 + Postgres (Drizzle ORM) API with server-rendered customer,
+kitchen, waiter, admin, order-tracking, and receipt pages, plus a Python
+AI menu-assistant service and Docker Compose deployment.
+
+Includes this session's work:
+- Unified "handwritten cafe" design system across all six pages
+  (shared theme tokens, fonts, components, inline-SVG icons).
+- Configurable branding (BRAND_NAME/BRAND_TAGLINE) wired through config,
+  pages, and docker-compose.
+- Seed creates admin, kitchen, and waiter roles.
+- ESLint configuration.
+- Robustness fixes: non-UUID order ids -> 404 (was 500), malformed JSON
+  -> 400, reject ordering archived/unavailable items, menu PATCH no
+  longer resets flags to defaults, customer menu-load failure fallback.
+- ONBOARDING.md setup guide for new restaurants.
+
+
+
